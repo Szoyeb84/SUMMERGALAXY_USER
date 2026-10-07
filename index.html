@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SummerGalaxy Rewards & Game Zone</title>
+    
+    <!-- MONETAG REWARDED INTERSTITIAL SDK -->
+    <script src='https://libtl.com/sdk.js' data-zone='11967155' data-sdk='show_11967155'></script>
+
+    <!-- EXTERNAL LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #030712;
+            touch-action: manipulation;
+        }
+        .view-screen { display: none; }
+        .view-screen.active { display: block; }
+        .glow-card {
+            box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.25);
+        }
+        .planet-glow {
+            box-shadow: 0 0 60px 15px rgba(99, 102, 241, 0.4);
+        }
+        .planet-press {
+            transform: scale(0.93);
+            transition: transform 0.05s ease;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans pb-24 antialiased selection:bg-blue-500 selection:text-white relative min-h-screen">
+
+    <!-- CUSTOM TOAST NOTIFICATION -->
+    <div id="custom-toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-indigo-500/50 text-slate-100 text-xs px-4 py-2.5 rounded-2xl shadow-2xl z-[120] hidden items-center space-x-2 transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-none backdrop-blur-md">
+        <span id="toast-icon" class="text-base">ℹ️</span>
+        <span id="toast-msg" class="font-bold">Notification</span>
+    </div>
+
+    <!-- 🚫 BANNED OVERLAY SCREEN -->
+    <div id="view-banned" class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-[110] hidden flex-col items-center justify-center p-6 text-center space-y-4">
+        <div class="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-center justify-center text-4xl animate-pulse shadow-lg shadow-red-500/10">
+            🚫
+        </div>
+        <h2 class="text-xl font-black text-red-500">Account Banned</h2>
+        <p class="text-xs text-slate-400 max-w-xs leading-relaxed">
+            Your account has been suspended by the administrator due to policy violations or suspicious activity.
+        </p>
+        <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-[11px] font-mono text-red-400 shadow-inner">
+            Status: Access Denied ❌
+        </div>
+    </div>
+
+    <!-- 🛠️ MAINTENANCE OVERLAY SCREEN -->
+    <div id="view-maintenance" class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-[100] hidden flex-col items-center justify-center p-6 text-center space-y-4">
+        <div onclick="checkAdminTap()" class="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-center justify-center text-4xl animate-bounce shadow-lg shadow-amber-500/10 cursor-pointer select-none">
+            🛠️
+        </div>
+        <h2 class="text-xl font-black text-slate-100">App Under Maintenance</h2>
+        <p class="text-xs text-slate-400 max-w-xs leading-relaxed">
+            We are upgrading our reward servers & adding new galaxy features. Please check back shortly!
+        </p>
+        <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-[11px] font-mono text-amber-400 shadow-inner">
+            Status: Maintenance Active ⏳
+        </div>
+    </div>
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="relative">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-md shadow-blue-500/30">
+                    SG
+                </div>
+                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+            </div>
+            <div>
+                <h1 id="ui-username" class="font-bold text-xs text-slate-100">Hello, Gamer 👋</h1>
+                <p id="ui-status" class="text-[10px] text-emerald-400 font-medium flex items-center space-x-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="ui-rank-label">Rank: Explorer (Lvl 1)</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800/90 border border-slate-700/80 px-3.5 py-1.5 rounded-2xl flex items-center space-x-2 shadow-inner">
+            <span class="text-sm">🪙</span>
+            <span id="ui-balance" class="text-xs font-black text-amber-400 tracking-wide">0</span>
+        </div>
+    </header>
+
+    <!-- LIVE TICKER ANNOUNCEMENT -->
+    <div class="px-4 pt-3">
+        <div class="bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/20 px-3.5 py-2 rounded-2xl flex items-center space-x-2 text-[11px] text-slate-300">
+            <span class="text-xs animate-bounce">📢</span>
+            <marquee class="font-medium text-slate-300">🎮 Tap Galaxy Orb, Upgrade Boosters, Spin 3-Hour Lucky Wheel & redeem VIP Game Access Vouchers!</marquee>
+        </div>
+    </div>
+
+    <!-- MAIN VIEWS CONTAINER -->
+    <main class="p-4 max-w-md mx-auto space-y-4">
+
+        <!-- SCREEN 1: TAP GAME ZONE -->
+        <section id="view-game" class="view-screen active space-y-4">
+            
+            <!-- GAME STATS BANNER -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 rounded-3xl border border-indigo-500/30 flex justify-between items-center glow-card">
+                <div>
+                    <div class="text-[10px] uppercase font-bold text-indigo-400">Interactive Mode</div>
+                    <div class="text-sm font-black text-white" id="ui-tap-power">Live Tap Feedback</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-[10px] uppercase font-bold text-purple-400">Level Rank</div>
+                    <div class="text-xs font-black text-purple-200" id="ui-level-badge">Lvl 1 Explorer</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-[10px] uppercase font-bold text-emerald-400">Total Taps</div>
+                    <div class="text-sm font-black text-white" id="ui-total-taps">0</div>
+                </div>
+            </div>
+
+            <!-- LEVEL PROGRESS BAR -->
+            <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl space-y-1.5">
+                <div class="flex justify-between items-center text-[11px] font-bold">
+                    <span class="text-slate-400">Level Progress</span>
+                    <span id="ui-level-progress-text" class="text-indigo-400">0 / 500 Taps</span>
+                </div>
+                <div class="w-full bg-slate-950 rounded-full h-2 border border-slate-800 overflow-hidden">
+                    <div id="ui-level-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE PLANET TAPPER AREA -->
+            <div class="relative py-4 flex flex-col items-center justify-center overflow-hidden">
+                <div id="planet-target" class="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-500 planet-glow flex items-center justify-center cursor-pointer select-none active:planet-press relative transition-transform">
+                    <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-slate-950/40 backdrop-blur-sm border border-white/20 flex flex-col items-center justify-center text-center p-2">
+                        <span class="text-5xl sm:text-6xl mb-1">🪐</span>
+                        <span class="text-[10px] font-black uppercase text-blue-200 tracking-wider">TAP ORB ANIMATION</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENERGY BAR -->
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-2">
+                <div class="flex justify-between items-center text-xs font-bold">
+                    <span class="text-slate-300 flex items-center space-x-1">
+                        <span>⚡</span> <span>Galaxy Energy</span>
+                    </span>
+                    <span id="ui-energy-text" class="text-amber-400">500 / 500</span>
+                </div>
+                <div class="w-full bg-slate-950 rounded-full h-3 border border-slate-800 overflow-hidden">
+                    <div id="ui-energy-bar" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-3 rounded-full transition-all duration-300" style="width: 100%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500">
+                    <span>⚡ Interactive Orb Animation Active</span>
+                    <span>⏳ 12-Hour Server Refill Cycle</span>
+                </div>
+            </div>
+
+            <!-- IN-GAME UPGRADES SHOP -->
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-3">
+                <h3 class="text-xs font-bold text-slate-200 flex items-center space-x-1.5">
+                    <span>🚀</span> <span>Power-Up Boosters</span>
+                </h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-upgrade-multitap" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-200">Orb Boost</div>
+                            <div class="text-[9px] text-slate-400">Enhance tap effects</div>
+                        </div>
+                        <div class="mt-2 text-xs font-black text-amber-400" id="ui-multitap-cost">🪙 100 Coins</div>
+                    </button>
+                    <button id="btn-upgrade-autodrone" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-200">Miner Drone</div>
+                            <div class="text-[9px] text-slate-400">+1 Coin / 10 sec</div>
+                        </div>
+                        <div class="mt-2 text-xs font-black text-amber-400" id="ui-autodrone-cost">🪙 250 Coins</div>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SCREEN 2: SPIN WHEEL MINIGAME -->
+        <section id="view-wheel" class="view-screen space-y-4">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-1">
+                <h2 class="text-sm font-bold text-slate-100 flex items-center justify-center space-x-1.5">
+                    <span>🎡</span> <span>Lucky Galaxy Spin</span>
+                </h2>
+                <p class="text-xs text-slate-400">Spin available once every 3 hours for bonus coins!</p>
+            </div>
+
+            <!-- CANVAS SPIN WHEEL -->
+            <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl flex flex-col items-center justify-center space-y-4 glow-card">
+                <div class="relative flex items-center justify-center">
+                    <div class="absolute -top-3 z-20 text-2xl text-amber-400 drop-shadow-md">▼</div>
+                    <canvas id="wheel-canvas" width="280" height="280" class="rounded-full border-4 border-indigo-600 shadow-2xl"></canvas>
+                </div>
+
+                <div id="ui-spin-timer" class="text-xs font-bold text-amber-400 hidden bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
+                    ⏱️ Next Spin Available in: <span id="spin-countdown">03h 00m 00s</span>
+                </div>
+
+                <button id="btn-spin-wheel" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:opacity-50 text-slate-950 font-black text-xs py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition uppercase tracking-wider">
+                    🎡 Spin Lucky Wheel
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: VIP PASS VOUCHER STORE -->
+        <section id="view-keys" class="view-screen space-y-4">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+                <h2 class="text-sm font-bold text-slate-100 flex items-center space-x-1.5">
+                    <span>🎫</span> <span>Claim VIP Pass Voucher</span>
+                </h2>
+                <p class="text-xs text-slate-400">Select your preferred access package and duration to redeem your earned coins.</p>
+                
+                <div class="space-y-3 pt-1">
+                    <div>
+                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">SELECT REWARD PACKAGE</label>
+                        <select id="select-loader" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="">Loading available packages...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">SELECT ACCESS PERIOD</label>
+                        <select id="select-duration" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="">Select Package First</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="btn-submit-key-req" class="w-full bg-blue-600 hover:bg-blue-500 font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-blue-600/25 transition">
+                    Request Pass Redemption
+                </button>
+            </div>
+
+            <div class="bg-slate-900 border border-emerald-500/30 p-4 rounded-2xl space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Active Approved Voucher Key</span>
+                    <span id="ui-key-badge" class="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold hidden">ACTIVE</span>
+                </div>
+                <div id="ui-active-key" class="font-bold text-slate-100 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <span class="text-slate-500">No active pass key currently redeemed.</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+                <h3 class="text-xs font-bold text-slate-300">Redemption Request Logs</h3>
+                <div id="ui-history-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    <p class="text-[11px] text-slate-500 text-center py-2">Loading logs...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: LEADERBOARD & RANKS -->
+        <section id="view-ranks" class="view-screen space-y-4">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
+                <h2 class="text-sm font-bold text-slate-100 flex items-center space-x-1.5">
+                    <span>🏆</span> <span>Galaxy Leaderboard</span>
+                </h2>
+                <p class="text-xs text-slate-400">Top gamers ranking based on overall coins earned!</p>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-800/60" id="ui-leaderboard">
+                <p class="text-xs text-slate-500 text-center py-4">Loading live leaderboard...</p>
+            </div>
+        </section>
+
+        <!-- SCREEN 5: EARN EXTRA COINS -->
+        <section id="view-earn" class="view-screen space-y-4">
+            <!-- DAILY CHECK-IN -->
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-slate-100 flex items-center space-x-1.5">
+                        <span>📅</span> <span>Daily Login Bonus</span>
+                    </h2>
+                    <span id="ui-streak-count" class="text-xs font-bold text-amber-400">Streak: 0 Days</span>
+                </div>
+                <button id="btn-do-checkin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">
+                    Claim Daily Bonus (+10 Coins)
+                </button>
+            </div>
+
+            <!-- SPONSORED REWARD VIDEO -->
+            <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 border border-indigo-500/30 p-4 rounded-2xl space-y-3 text-center glow-card">
+                <div class="w-10 h-10 bg-indigo-500/10 rounded-xl border border-indigo-500/20 flex items-center justify-center mx-auto text-xl">
+                    🎬
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-slate-100">Sponsored High Reward Video</h3>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Watch 2 short ads to receive +25 bonus coins instantly.</p>
+                </div>
+                <button id="btn-watch-ad" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition">
+                    Watch Video (+25 Coins) [0/15 Today]
+                </button>
+            </div>
+
+            <!-- AUTO MINING VAULT -->
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-200 flex items-center space-x-1">
+                        <span>⚡</span> <span>Passive Coin Mining</span>
+                    </span>
+                    <span id="ui-mined-display" class="text-xs font-bold text-amber-400">🪙 0.00 / 50</span>
+                </div>
+                <button id="btn-claim-mining" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl transition shadow-md shadow-emerald-600/20">
+                    Claim Mined Balance 🪙
+                </button>
+            </div>
+
+            <!-- TASKS LIST -->
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold text-slate-300">Community Tasks</h3>
+                <div id="ui-tasks-list" class="space-y-2">
+                    <p class="text-[11px] text-slate-500 text-center py-2">Loading tasks...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/90 py-2.5 px-2 z-50">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            <button onclick="window.UIController.navigateTo('view-game')" id="nav-btn-game" class="nav-item flex flex-col items-center space-y-1 text-blue-500 font-bold text-[10px]">
+                <span class="text-base">🎮</span>
+                <span>Play Game</span>
+            </button>
+            <button onclick="window.UIController.navigateTo('view-wheel')" id="nav-btn-wheel" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
+                <span class="text-base">🎡</span>
+                <span>Spin Wheel</span>
+            </button>
+            <button onclick="window.UIController.navigateTo('view-keys')" id="nav-btn-keys" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
+                <span class="text-base">🎫</span>
+                <span>VIP Store</span>
+            </button>
+            <button onclick="window.UIController.navigateTo('view-ranks')" id="nav-btn-ranks" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
+                <span class="text-base">🏆</span>
+                <span>Ranks</span>
+            </button>
+            <button onclick="window.UIController.navigateTo('view-earn')" id="nav-btn-earn" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
+                <span class="text-base">💰</span>
+                <span>Earn Extra</span>
+            </button>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, set, update, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJi4iRuuvFtnZdl6q9Z36Ia8VMYH5PW3k",
+            authDomain: "keysystem-6b958.firebaseapp.com",
+            databaseURL: "https://keysystem-6b958-default-rtdb.firebaseio.com",
+            projectId: "keysystem-6b958",
+            storageBucket: "keysystem-6b958.firebasestorage.app",
+            messagingSenderId: "470671881726",
+            appId: "1:470671881726:web:3029dd39a0ad32b0fd75a1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : {
+            expand: () => {},
+            showAlert: (m) => window.showToast(m),
+            HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} },
+            initDataUnsafe: {}
+        };
+        try { if (tg.expand) tg.expand(); } catch(e){}
+
+        const MAX_ENERGY = 500;
+        const SPIN_3_HOURS_MS = 3 * 60 * 60 * 1000;
+
+        let tapCountAdmin = 0;
+
+        window.showToast = function(msg, icon = 'ℹ️') {
+            const toast = document.getElementById('custom-toast');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+            if (!toast || !msgEl) return;
+            
+            msgEl.innerText = msg;
+            iconEl.innerText = icon;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.remove('-translate-y-4', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-4', 'opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 2800);
+        };
+
+        const SoundSystem = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playTap() {
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400 + Math.random() * 150, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.08);
+                } catch (e) {}
+            },
+            playWin() {
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.25);
+                } catch (e) {}
+            }
+        };
+
+        window.checkAdminTap = async function() {
+            tapCountAdmin++;
+            if (tapCountAdmin >= 10) {
+                try {
+                    const currentUserId = AppState.user.id;
+                    const settingsSnap = await get(ref(db, 'settings'));
+                    
+                    if (!settingsSnap.exists()) {
+                        window.showToast("⚠️ Settings node not configured in database!", "⚠️");
+                        tapCountAdmin = 0;
+                        return;
+                    }
+
+                    const settings = settingsSnap.val();
+                    const allowedAdminId = settings.admin_telegram_id;
+
+                    if (allowedAdminId && Number(currentUserId) !== Number(allowedAdminId)) {
+                        window.showToast("❌ Unauthorized access!", "❌");
+                        tapCountAdmin = 0;
+                        return;
+                    }
+
+                    sessionStorage.setItem("admin_bypass", "true");
+                    window.showToast("✅ Maintenance Admin Bypass Activated!", "✅");
+                    setTimeout(() => location.reload(), 1000);
+
+                } catch (error) {
+                    console.error(error);
+                    window.showToast("Error connecting to server!", "❌");
+                }
+                tapCountAdmin = 0;
+            }
+        };
+
+        const AppState = {
+            watchAdsConfig: { daily_limit: 15, reward: 25 },
+            miningConfig: { daily_limit: 50 },
+            user: {
+                id: "test_user_androidide",
+                name: "Gamer",
+                coins: 0,
+                minedCoins: 0.0,
+                lastMiningTime: Date.now(),
+                streak: 0,
+                lastCheckInDate: "",
+                completedTasks: {},
+                watchedAds: 0,
+                lastAdResetDate: "",
+                energy: MAX_ENERGY,
+                lastEnergyUpdate: Date.now(),
+                totalTaps: 0,
+                lastSpinTime: 0,
+                hasDrone: false
+            },
+            loaders: {}
+        };
+
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            AppState.user.id = tg.initDataUnsafe.user.id.toString();
+            AppState.user.name = tg.initDataUnsafe.user.first_name || "Gamer";
+        }
+
+        function sanitizeTitle(str) {
+            if (!str) return "VIP Game Pass";
+            return str.replace(/cheat|hack|loader|mod|spoofer/gi, "VIP Pass");
+        }
+
+        function getLevelInfo(totalTaps) {
+            if (totalTaps >= 10000) return { title: "Cosmic Legend", level: 5, target: 10000 };
+            if (totalTaps >= 5000) return { title: "Quantum Master", level: 4, target: 10000 };
+            if (totalTaps >= 2000) return { title: "Galactic Pioneer", level: 3, target: 5000 };
+            if (totalTaps >= 500) return { title: "Starlight Miner", level: 2, target: 2000 };
+            return { title: "Explorer", level: 1, target: 500 };
+        }
+
+        window.UIController = {
+            navigateTo(screenId) {
+                try {
+                    if (tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                } catch(e){}
+
+                document.querySelectorAll('.view-screen').forEach(el => el.classList.remove('active'));
+                const targetEl = document.getElementById(screenId);
+                if (targetEl) targetEl.classList.add('active');
+
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.classList.remove('text-blue-500');
+                    el.classList.add('text-slate-500');
+                });
+                
+                const navKey = screenId.replace('view-', 'nav-btn-');
+                const activeNav = document.getElementById(navKey);
+                if (activeNav) {
+                    activeNav.classList.remove('text-slate-500');
+                    activeNav.classList.add('text-blue-500');
+                }
+
+                if (screenId === 'view-keys') FirebaseService.fetchLoadersAndHistory();
+                if (screenId === 'view-earn') FirebaseService.fetchTasks();
+                if (screenId === 'view-wheel') WheelGame.updateWheelView();
+            },
+
+            updateHeader() {
+                const nameEl = document.getElementById('ui-username');
+                const balEl = document.getElementById('ui-balance');
+                if (nameEl) nameEl.innerText = `Hello, ${AppState.user.name} 👋`;
+                if (balEl) balEl.innerText = Math.floor(AppState.user.coins);
+                
+                FirebaseService.calculateMinedCoins();
+                
+                const lvl = getLevelInfo(AppState.user.totalTaps);
+                const rankLbl = document.getElementById('ui-rank-label');
+                const lvlBadge = document.getElementById('ui-level-badge');
+                
+                if (rankLbl) rankLbl.innerText = `Rank: ${lvl.title} (Lvl ${lvl.level})`;
+                if (lvlBadge) lvlBadge.innerText = `Lvl ${lvl.level} ${lvl.title}`;
+
+                const pct = Math.min(100, Math.floor((AppState.user.totalTaps / lvl.target) * 100));
+                const lvlBar = document.getElementById('ui-level-bar');
+                const lvlText = document.getElementById('ui-level-progress-text');
+                
+                if (lvlBar) lvlBar.style.width = `${pct}%`;
+                if (lvlText) lvlText.innerText = `${AppState.user.totalTaps} / ${lvl.target} Interactions`;
+
+                const streakEl = document.getElementById('ui-streak-count');
+                const tapsEl = document.getElementById('ui-total-taps');
+                if (streakEl) streakEl.innerText = `Streak: ${AppState.user.streak} Days`;
+                if (tapsEl) tapsEl.innerText = AppState.user.totalTaps;
+
+                const today = new Date().toISOString().split('T')[0];
+                const watched = (AppState.user.lastAdResetDate === today) ? AppState.user.watchedAds : 0;
+                const adBtn = document.getElementById('btn-watch-ad');
+                if (adBtn) adBtn.innerText = `Watch Video (+${AppState.watchAdsConfig.reward} Coins) [${watched}/${AppState.watchAdsConfig.daily_limit} Today]`;
+
+                const droneEl = document.getElementById('ui-autodrone-cost');
+                if (droneEl) {
+                    if (AppState.user.hasDrone) {
+                        droneEl.innerText = `✅ Active`;
+                    } else {
+                        droneEl.innerText = `🪙 250 Coins`;
+                    }
+                }
+            }
+        };
+
+        const TapGame = {
+            init() {
+                const target = document.getElementById('planet-target');
+                if (!target) return;
+
+                target.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    for(let i = 0; i < e.touches.length; i++) {
+                        this.handleTap(e.touches[i].clientX, e.touches[i].clientY);
+                    }
+                });
+                target.addEventListener('click', (e) => {
+                    this.handleTap(e.clientX, e.clientY);
+                });
+
+                setInterval(() => {
+                    if (AppState.user.hasDrone) {
+                        AppState.user.coins += 1;
+                        window.UIController.updateHeader();
+                    }
+                }, 10000);
+            },
+
+            handleTap(x, y) {
+                SoundSystem.playTap();
+                AppState.user.totalTaps += 1;
+                window.UIController.updateHeader();
+
+                try {
+                    if (tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                } catch(e){}
+
+                const target = document.getElementById('planet-target');
+                if (target) {
+                    target.classList.add('planet-press');
+                    setTimeout(() => target.classList.remove('planet-press'), 100);
+
+                    const rect = target.getBoundingClientRect();
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'absolute text-sm font-black text-blue-300 pointer-events-none animate-ping';
+                    sparkle.style.left = `${Math.max(10, Math.min(rect.width - 20, x - rect.left))}px`;
+                    sparkle.style.top = `${Math.max(10, Math.min(rect.height - 20, y - rect.top))}px`;
+                    sparkle.innerHTML = '✨';
+                    target.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 600);
+                }
+
+                setTimeout(() => {
+                    FirebaseService.syncUserData();
+                }, 1000);
+            }
+        };
+
+        const WheelGame = {
+            slices: ["🪙 2", "🪙 5", "🪙 1", "🪙 10", "🪙 3", "🪙 15", "🪙 5", "🪙 20"],
+            rewardValues: [2, 5, 1, 10, 3, 15, 5, 20],
+            colors: ["#3b82f6", "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#f43f5e"],
+            angle: 0,
+            isSpinning: false,
+
+            drawWheel() {
+                const canvas = document.getElementById('wheel-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const numSlices = this.slices.length;
+                const sliceAngle = (2 * Math.PI) / numSlices;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < numSlices; i++) {
+                    ctx.beginPath();
+                    ctx.fillStyle = this.colors[i];
+                    ctx.moveTo(140, 140);
+                    ctx.arc(140, 140, 135, this.angle + i * sliceAngle, this.angle + (i + 1) * sliceAngle);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.save();
+                    ctx.translate(140, 140);
+                    ctx.rotate(this.angle + (i + 0.5) * sliceAngle);
+                    ctx.textAlign = "right";
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 13px sans-serif";
+                    ctx.fillText(this.slices[i], 120, 5);
+                    ctx.restore();
+                }
+            },
+
+            updateWheelView() {
+                this.drawWheel();
+                this.checkCooldown();
+            },
+
+            checkCooldown() {
+                const now = Date.now();
+                const lastSpin = AppState.user.lastSpinTime || 0;
+                const elapsed = now - lastSpin;
+
+                const spinBtn = document.getElementById('btn-spin-wheel');
+                const timerContainer = document.getElementById('ui-spin-timer');
+                const countdownText = document.getElementById('spin-countdown');
+
+                if (!spinBtn) return;
+
+                if (elapsed < SPIN_3_HOURS_MS) {
+                    const remainingMs = SPIN_3_HOURS_MS - elapsed;
+                    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                    const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+                    spinBtn.disabled = true;
+                    spinBtn.innerText = "🔒 Cooldown Active";
+                    if (timerContainer) timerContainer.classList.remove('hidden');
+                    if (countdownText) countdownText.innerText = `${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+                } else {
+                    spinBtn.disabled = false;
+                    spinBtn.innerText = "🎡 Spin Lucky Wheel (Free)";
+                    if (timerContainer) timerContainer.classList.add('hidden');
+                }
+            },
+
+            spin() {
+                if (this.isSpinning) return;
+                
+                const now = Date.now();
+                const lastSpin = AppState.user.lastSpinTime || 0;
+                if (now - lastSpin < SPIN_3_HOURS_MS) {
+                    window.showToast("Wheel is in cooldown! Check back when timer finishes.", "⏱");
+                    return;
+                }
+
+                this.isSpinning = true;
+
+                const numSlices = this.slices.length;
+                const sliceAngle = (2 * Math.PI) / numSlices;
+                
+                const prizeIndex = Math.floor(Math.random() * numSlices);
+                const prizeCoins = this.rewardValues[prizeIndex];
+
+                const extraSpins = 5 * 2 * Math.PI; 
+                const targetSliceCenterAngle = -Math.PI / 2;
+                const currentNormalizedAngle = this.angle % (2 * Math.PI);
+                const neededOffset = targetSliceCenterAngle - (currentNormalizedAngle + (prizeIndex + 0.5) * sliceAngle);
+                
+                const finalTargetAngle = this.angle + extraSpins + ((neededOffset % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+
+                let start = null;
+                const duration = 4000;
+
+                const animate = (timestamp) => {
+                    if (!start) start = timestamp;
+                    const elapsed = timestamp - start;
+                    const progress = Math.min(1, elapsed / duration);
+                    
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const currentAngle = this.angle + (finalTargetAngle - this.angle) * easeOut;
+                    this.angle = currentAngle;
+
+                    this.drawWheel();
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = finalTargetAngle;
+                        this.drawWheel();
+                        this.isSpinning = false;
+                        
+                        AppState.user.lastSpinTime = Date.now();
+                        AppState.user.coins += prizeCoins;
+                        
+                        SoundSystem.playWin();
+                        FirebaseService.syncUserData();
+                        this.checkCooldown();
+                        window.showToast(`🎉 Won ${prizeCoins} Coins from Lucky Wheel!`, "🎉");
+                    }
+                };
+
+                requestAnimationFrame(animate);
+            }
+        };
+
+        setInterval(() => {
+            const wheelScreen = document.getElementById('view-wheel');
+            if (wheelScreen && wheelScreen.classList.contains('active')) {
+                WheelGame.checkCooldown();
+            }
+        }, 1000);
+
+        const btnSpin = document.getElementById('btn-spin-wheel');
+        if (btnSpin) btnSpin.addEventListener('click', () => WheelGame.spin());
+
+        const btnDrone = document.getElementById('btn-upgrade-autodrone');
+        if (btnDrone) {
+            btnDrone.addEventListener('click', () => {
+                if (AppState.user.hasDrone) {
+                    window.showToast("Miner Drone is already active!", "ℹ️");
+                    return;
+                }
+                if (AppState.user.coins >= 250) {
+                    AppState.user.coins -= 250;
+                    AppState.user.hasDrone = true;
+                    SoundSystem.playWin();
+                    FirebaseService.syncUserData();
+                    window.showToast("🚀 Miner Drone Activated! Mines 1 coin / 10s!", "🚀");
+                } else {
+                    window.showToast("Insufficient balance! Need 250 Coins.", "❌");
+                }
+            });
+        }
+
+        const FirebaseService = {
+            userRef: ref(db, 'users/' + AppState.user.id),
+
+            async fetchConfigs() {
+                try {
+                    const adSnap = await get(ref(db, 'watch_ads_config'));
+                    if (adSnap.exists()) {
+                        const adData = adSnap.val();
+                        AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit || 15);
+                        AppState.watchAdsConfig.reward = Number(adData.reward || 25);
+                    }
+
+                    const mineSnap = await get(ref(db, 'mining_config'));
+                    if (mineSnap.exists()) {
+                        const mineData = mineSnap.val();
+                        AppState.miningConfig.daily_limit = Number(mineData.daily_limit || 50);
+                    }
+                } catch (e) { console.log("Config fallback active."); }
+            },
+
+            async initUserSession() {
+                try {
+                    await this.fetchConfigs();
+
+                    const snapshot = await get(this.userRef);
+                    const data = snapshot.val();
+                    const now = Date.now();
+                    const today = new Date().toISOString().split('T')[0];
+
+                    if (data) {
+                        AppState.user.coins = data.coins || 0;
+                        AppState.user.lastMiningTime = data.last_mining_time || now;
+                        AppState.user.streak = data.streak || 0;
+                        AppState.user.lastCheckInDate = data.last_date || "";
+                        AppState.user.completedTasks = data.completed_tasks || {};
+                        AppState.user.lastAdResetDate = data.last_ad_reset_date || "";
+                        AppState.user.totalTaps = data.total_taps || 0;
+                        AppState.user.lastSpinTime = data.last_spin_time || 0;
+                        AppState.user.hasDrone = data.has_drone || false;
+
+                        if (AppState.user.lastAdResetDate !== "" && AppState.user.lastAdResetDate !== today) {
+                            AppState.user.watchedAds = 0;
+                            AppState.user.lastAdResetDate = today;
+                        } else {
+                            AppState.user.watchedAds = data.watched_ads || 0;
+                            if (!AppState.user.lastAdResetDate) AppState.user.lastAdResetDate = today;
+                        }
+                    } else {
+                        AppState.user.coins = 50;
+                        AppState.user.lastAdResetDate = today;
+                        AppState.user.watchedAds = 0;
+                        AppState.user.lastMiningTime = now;
+                    }
+                } catch(e) {
+                    console.warn("Session offline/fallback:", e);
+                    AppState.user.coins = AppState.user.coins || 50;
+                }
+
+                this.syncUserData();
+                window.UIController.updateHeader();
+                this.listenRealtimeCoins();
+                this.listenMaintenanceMode();
+                this.listenBanStatus();
+                this.fetchLeaderboard();
+                this.startMiningTimer();
+                TapGame.init();
+            },
+
+            listenMaintenanceMode() {
+                try {
+                    onValue(ref(db, 'settings/maintenance_mode'), (snapshot) => {
+                        const isMaintenance = snapshot.val();
+                        const isSessionAdmin = sessionStorage.getItem("admin_bypass") === "true";
+                        const maintenanceScreen = document.getElementById('view-maintenance');
+
+                        if (maintenanceScreen) {
+                            if (isMaintenance === true && !isSessionAdmin) {
+                                maintenanceScreen.classList.remove('hidden');
+                                maintenanceScreen.classList.add('flex');
+                            } else {
+                                maintenanceScreen.classList.add('hidden');
+                                maintenanceScreen.classList.remove('flex');
+                            }
+                        }
+                    });
+                } catch(e){}
+            },
+
+            listenBanStatus() {
+                try {
+                    onValue(ref(db, `users/${AppState.user.id}/banned`), (snapshot) => {
+                        const isBanned = snapshot.val();
+                        const bannedScreen = document.getElementById('view-banned');
+                        if (bannedScreen) {
+                            if (isBanned === true) {
+                                bannedScreen.classList.remove('hidden');
+                                bannedScreen.classList.add('flex');
+                            } else {
+                                bannedScreen.classList.add('hidden');
+                                bannedScreen.classList.remove('flex');
+                            }
+                        }
+                    });
+                } catch(e){}
+            },
+
+            fetchLeaderboard() {
+                try {
+                    onValue(ref(db, 'users'), (snapshot) => {
+                        const data = snapshot.val();
+                        const leaderboardContainer = document.getElementById('ui-leaderboard');
+                        if (!leaderboardContainer) return;
+                        
+                        if (!data) {
+                            leaderboardContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No users on leaderboard yet.</p>`;
+                            return;
+                        }
+
+                        const usersArray = Object.keys(data).map(id => ({
+                            id: id,
+                            ...data[id]
+                        })).sort((a, b) => (b.coins || 0) - (a.coins || 0));
+
+                        leaderboardContainer.innerHTML = "";
+                        usersArray.slice(0, 10).forEach((u, index) => {
+                            const rank = index + 1;
+                            const rankColor = rank === 1 ? 'text-amber-400 font-black' : (rank === 2 ? 'text-slate-300 font-bold' : (rank === 3 ? 'text-amber-600 font-bold' : 'text-slate-500'));
+                            
+                            const div = document.createElement('div');
+                            div.className = "p-3 flex items-center justify-between text-xs";
+                            div.innerHTML = `
+                                <div class="flex items-center space-x-3">
+                                    <span class="${rankColor} text-sm w-4">#${rank}</span>
+                                    <div>
+                                        <div class="font-bold text-slate-100">${u.name || 'Gamer'}</div>
+                                        <div class="text-[9px] text-indigo-400">ID: ${u.id.substring(0, 8)}...</div>
+                                    </div>
+                                </div>
+                                <span class="font-black text-amber-400">🪙 ${u.coins || 0}</span>
+                            `;
+                            leaderboardContainer.appendChild(div);
+                        });
+                    });
+                } catch(e){}
+            },
+
+            calculateMinedCoins() {
+                const now = Date.now();
+                const elapsedMs = Math.max(0, now - AppState.user.lastMiningTime);
+                const max24hMs = 24 * 60 * 60 * 1000;
+                
+                const accumulated = (elapsedMs / max24hMs) * AppState.miningConfig.daily_limit;
+                AppState.user.minedCoins = Math.min(AppState.miningConfig.daily_limit, accumulated);
+
+                const minedEl = document.getElementById('ui-mined-display');
+                if (minedEl) minedEl.innerText = `🪙 ${AppState.user.minedCoins.toFixed(2)} / ${AppState.miningConfig.daily_limit}`;
+            },
+
+            syncUserData() {
+                try {
+                    update(this.userRef, {
+                        name: AppState.user.name,
+                        coins: AppState.user.coins,
+                        last_mining_time: AppState.user.lastMiningTime,
+                        streak: AppState.user.streak,
+                        last_date: AppState.user.lastCheckInDate,
+                        completed_tasks: AppState.user.completedTasks,
+                        watched_ads: AppState.user.watchedAds,
+                        last_ad_reset_date: AppState.user.lastAdResetDate,
+                        total_taps: AppState.user.totalTaps,
+                        last_spin_time: AppState.user.lastSpinTime,
+                        has_drone: AppState.user.hasDrone,
+                        last_earned: serverTimestamp()
+                    });
+                } catch(e){}
+                window.UIController.updateHeader();
+            },
+
+            listenRealtimeCoins() {
+                try {
+                    onValue(ref(db, `users/${AppState.user.id}/coins`), (snapshot) => {
+                        const coins = snapshot.val();
+                        if (coins !== null) {
+                            AppState.user.coins = coins;
+                            window.UIController.updateHeader();
+                        }
+                    });
+                } catch(e){}
+            },
+
+            startMiningTimer() {
+                setInterval(() => this.calculateMinedCoins(), 10000);
+            },
+
+            async fetchLoadersAndHistory() {
+                let snapshotVal = null;
+                try {
+                    const snapshot = await get(ref(db, 'redeemable_loaders'));
+                    snapshotVal = snapshot.val();
+                } catch(e){}
+
+                AppState.loaders = snapshotVal || {
+                    "BGMI VIP Pass": { enabled: true, coin_cost: 300, durations: { "1 Day": true, "7 Days": true } },
+                    "PUBG VIP Pass": { enabled: true, coin_cost: 500, durations: { "3 Days": true, "30 Days": true } }
+                };
+                
+                const selectLoader = document.getElementById('select-loader');
+                if (selectLoader) {
+                    selectLoader.innerHTML = '<option value="">-- Choose Package --</option>';
+
+                    for (const rawName in AppState.loaders) {
+                        if (AppState.loaders[rawName].enabled) {
+                            const opt = document.createElement('option');
+                            opt.value = rawName;
+                            opt.textContent = sanitizeTitle(rawName);
+                            selectLoader.appendChild(opt);
+                        }
+                    }
+                }
+                this.fetchHistory();
+            },
+
+            async fetchHistory() {
+                let requests = {};
+                try {
+                    const snapshot = await get(ref(db, 'key_requests'));
+                    requests = snapshot.val() || {};
+                } catch(e){}
+
+                const listContainer = document.getElementById('ui-history-list');
+                const activeKeyBox = document.getElementById('ui-active-key');
+                const activeKeyBadge = document.getElementById('ui-key-badge');
+                
+                if (!listContainer) return;
+                listContainer.innerHTML = "";
+                let userRequests = [];
+                for (const id in requests) {
+                    if (requests[id].hwid === AppState.user.id) {
+                        userRequests.push(requests[id]);
+                    }
+                }
+
+                if (userRequests.length === 0) {
+                    listContainer.innerHTML = `<p class="text-[11px] text-slate-500 text-center py-2">No active redemption requests found.</p>`;
+                    if (activeKeyBox) activeKeyBox.innerHTML = `<span class="text-slate-500">No active voucher key available.</span>`;
+                    if (activeKeyBadge) activeKeyBadge.classList.add('hidden');
+                    return;
+                }
+
+                userRequests.reverse();
+                const approvedReq = userRequests.find(req => {
+                    const status = (req.status || '').toLowerCase();
+                    return status === 'approved' || status === 'done';
+                });
+
+                if (approvedReq) {
+                    const keyVal = approvedReq.assigned_key || approvedReq.key || approvedReq.note || 'VIP_PASS_GRANTED';
+                    if (activeKeyBadge) activeKeyBadge.classList.remove('hidden');
+                    if (activeKeyBox) {
+                        activeKeyBox.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <span class="font-mono text-emerald-400 font-bold select-all truncate mr-2">${keyVal}</span>
+                                <button onclick="window.copyToClipboard('${keyVal}')" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-emerald-500/40 transition">
+                                    Copy 📋
+                                </button>
+                            </div>
+                        `;
+                    }
+                } else {
+                    if (activeKeyBadge) activeKeyBadge.classList.add('hidden');
+                    if (activeKeyBox) activeKeyBox.innerHTML = `<span class="text-slate-500">No active voucher key available.</span>`;
+                }
+
+                userRequests.slice(0, 5).forEach(req => {
+                    const item = document.createElement('div');
+                    const isApproved = ['approved', 'done'].includes((req.status || '').toLowerCase());
+                    const cleanLoaderName = sanitizeTitle(req.loader);
+                    
+                    item.className = "bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs";
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-bold text-slate-200">${cleanLoaderName} (${req.duration})</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${req.assigned_key || req.note || 'Pending Verification...'}</div>
+                        </div>
+                        <span class="text-[10px] font-bold ${isApproved ? 'text-emerald-400' : 'text-amber-400'} uppercase">${req.status || 'PENDING'}</span>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            },
+
+            async fetchTasks() {
+                let tasks = null;
+                try {
+                    const snapshot = await get(ref(db, 'tasks'));
+                    tasks = snapshot.val();
+                } catch(e){}
+
+                tasks = tasks || {
+                    "task_1": { title: "Join Community Telegram Channel", reward: 50, link: "https://t.me", icon: "📢" },
+                    "task_2": { title: "Follow Galaxy News Channel", reward: 35, link: "https://t.me", icon: "⭐" }
+                };
+
+                const container = document.getElementById('ui-tasks-list');
+                if (!container) return;
+                container.innerHTML = "";
+
+                for (const id in tasks) {
+                    const t = tasks[id];
+                    const isCompleted = AppState.user.completedTasks[id] === true;
+                    const coinReward = t.reward || t.coins || 50;
+                    const icon = t.icon || "📺";
+
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-900 border border-slate-800 p-3 rounded-2xl flex justify-between items-center";
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <span class="text-lg">${icon}</span>
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">${t.title || 'Community Task'}</div>
+                                <div class="text-[10px] font-bold text-emerald-400">+${coinReward} Coins</div>
+                            </div>
+                        </div>
+                        <button onclick="window.completeTask('${id}', ${coinReward}, '${t.link || '#'}')" 
+                            class="${isCompleted ? 'bg-slate-800 text-slate-500' : 'bg-blue-600 hover:bg-blue-500 text-white'} text-[11px] font-bold px-3 py-1.5 rounded-xl transition"
+                            ${isCompleted ? 'disabled' : ''}>
+                            ${isCompleted ? 'Completed ✓' : 'Start'}
+                        </button>
+                    `;
+                    container.appendChild(div);
+                }
+            }
+        };
+
+        window.copyToClipboard = function(text) {
+            try {
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textarea);
+                window.showToast("Voucher code copied to clipboard! 📋", "✅");
+            } catch(e) {
+                window.showToast("Code copied: " + text, "📋");
+            }
+        };
+
+        const btnWatchAd = document.getElementById('btn-watch-ad');
+        if (btnWatchAd) {
+            btnWatchAd.addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                if (AppState.user.lastAdResetDate !== today) {
+                    AppState.user.watchedAds = 0;
+                    AppState.user.lastAdResetDate = today;
+                }
+
+                if (AppState.user.watchedAds >= AppState.watchAdsConfig.daily_limit) {
+                    window.showToast(`Daily limit reached (${AppState.watchAdsConfig.daily_limit}/${AppState.watchAdsConfig.daily_limit})!`, "⚠️");
+                    return;
+                }
+
+                btnWatchAd.disabled = true;
+                btnWatchAd.innerText = "Loading Ad 1/2... ⏳";
+
+                const rewardUser = () => {
+                    const rewardAmount = AppState.watchAdsConfig.reward;
+                    AppState.user.coins += rewardAmount;
+                    AppState.user.watchedAds += 1;
+                    SoundSystem.playWin();
+                    FirebaseService.syncUserData();
+                    window.showToast(`🎉 Reward Earned! +${rewardAmount} Coins credited!`, "🎉");
+                };
+
+                if (typeof window.show_11967155 === 'function') {
+                    window.show_11967155().then(() => {
+                        window.showToast("Ad 1/2 completed! Loading Ad 2/2...", "🎬");
+                        btnWatchAd.innerText = "Loading Ad 2/2... ⏳";
+                        
+                        return new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                if (typeof window.show_11967155 === 'function') {
+                                    window.show_11967155().then(resolve).catch(reject);
+                                } else {
+                                    reject(new Error("SDK offline for 2nd ad"));
+                                }
+                            }, 800);
+                        });
+                    }).then(() => {
+                        rewardUser();
+                    }).catch((err) => {
+                        console.error("Monetag Ad Error:", err);
+                        window.showToast("⚠️ Ad dismissed or failed to load!", "⚠️");
+                    }).finally(() => {
+                        btnWatchAd.disabled = false;
+                        window.UIController.updateHeader();
+                    });
+                } else {
+                    window.showToast("Monetag SDK loading... Please try in 3 seconds.", "⏳");
+                    btnWatchAd.disabled = false;
+                    window.UIController.updateHeader();
+                }
+            });
+        }
+
+        const btnClaimMining = document.getElementById('btn-claim-mining');
+        if (btnClaimMining) {
+            btnClaimMining.addEventListener('click', () => {
+                FirebaseService.calculateMinedCoins();
+                const claimableCoins = Math.floor(AppState.user.minedCoins);
+
+                if (claimableCoins < 1) {
+                    window.showToast("Mining in progress! Minimum 1 coin required. ⏳", "⏳");
+                    return;
+                }
+
+                AppState.user.coins += claimableCoins;
+                AppState.user.minedCoins = 0;
+                AppState.user.lastMiningTime = Date.now();
+                SoundSystem.playWin();
+                FirebaseService.syncUserData();
+                window.showToast(`🎉 Claim Successful! +${claimableCoins} Mined Coins added!`, "🎉");
+            });
+        }
+
+        const selectLoader = document.getElementById('select-loader');
+        if (selectLoader) {
+            selectLoader.addEventListener('change', (e) => {
+                const loaderName = e.target.value;
+                const selectDuration = document.getElementById('select-duration');
+                if (!selectDuration) return;
+                selectDuration.innerHTML = "";
+
+                if (loaderName && AppState.loaders[loaderName]) {
+                    const durations = AppState.loaders[loaderName].durations || {};
+                    for (const dName in durations) {
+                        if (durations[dName]) {
+                            const opt = document.createElement('option');
+                            opt.value = dName;
+                            opt.textContent = dName;
+                            selectDuration.appendChild(opt);
+                        }
+                    }
+                } else {
+                    selectDuration.innerHTML = '<option value="">Select Package First</option>';
+                }
+            });
+        }
+
+        const btnSubmitKey = document.getElementById('btn-submit-key-req');
+        if (btnSubmitKey) {
+            btnSubmitKey.addEventListener('click', () => {
+                const loader = document.getElementById('select-loader')?.value;
+                const duration = document.getElementById('select-duration')?.value;
+
+                if (!loader || !duration) {
+                    window.showToast("Please select both package and duration!", "⚠️");
+                    return;
+                }
+
+                const loaderObj = AppState.loaders[loader];
+                const cost = loaderObj ? (Number(loaderObj.coin_cost) || Number(loaderObj.cost) || 0) : 0;
+
+                if (AppState.user.coins < cost) {
+                    window.showToast(`Insufficient balance! Required: ${cost} Coins.`, "❌");
+                    return;
+                }
+
+                AppState.user.coins -= cost;
+                FirebaseService.syncUserData();
+
+                const reqId = "req_" + Date.now();
+                set(ref(db, `key_requests/${reqId}`), {
+                    id: reqId,
+                    loader: loader,
+                    duration: duration,
+                    status: "pending",
+                    hwid: AppState.user.id,
+                    telegram_username: "@" + AppState.user.name
+                }).then(() => {
+                    window.showToast("Redemption request submitted successfully! 🎉", "🎉");
+                    FirebaseService.fetchHistory();
+                }).catch((err) => {
+                    console.error(err);
+                    window.showToast("Error submitting request to server!", "❌");
+                });
+            });
+        }
+
+        const btnCheckin = document.getElementById('btn-do-checkin');
+        if (btnCheckin) {
+            btnCheckin.addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                if (AppState.user.lastCheckInDate === today) {
+                    window.showToast("Already checked in today! Come back tomorrow.", "📅");
+                    return;
+                }
+
+                AppState.user.streak += 1;
+                AppState.user.coins += 10;
+                AppState.user.lastCheckInDate = today;
+                SoundSystem.playWin();
+                FirebaseService.syncUserData();
+                window.showToast("Daily check-in successful! +10 Coins 🎁", "🎁");
+            });
+        }
+
+        window.completeTask = function(taskId, reward, link) {
+            if (link && link !== "#") window.open(link, '_blank');
+            AppState.user.completedTasks[taskId] = true;
+            AppState.user.coins += reward;
+            
+            try {
+                set(ref(db, `users/${AppState.user.id}/completed_tasks/${taskId}`), true);
+            } catch(e){}
+            SoundSystem.playWin();
+            FirebaseService.syncUserData();
+            FirebaseService.fetchTasks();
+            window.showToast(`Task completed! +${reward} coins 🎉`, "🎉");
+        };
+
+        FirebaseService.initUserSession();
+    </script>
+</body>
+</html>
