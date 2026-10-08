@@ -502,7 +502,8 @@
                 lastEnergyUpdate: Date.now(),
                 totalTaps: 0,
                 lastSpinTime: 0,
-                hasDrone: false
+                hasDrone: false,
+                keyRequests: { sent: 0, approved: 0, rejected: 0 } // Track user key requests stats
             },
             loaders: {}
         };
@@ -848,6 +849,7 @@
                         AppState.user.totalTaps = data.total_taps || 0;
                         AppState.user.lastSpinTime = data.last_spin_time || 0;
                         AppState.user.hasDrone = data.has_drone || false;
+                        AppState.user.keyRequests = data.keyRequests || { sent: 0, approved: 0, rejected: 0 };
 
                         if (AppState.user.lastAdResetDate !== "" && AppState.user.lastAdResetDate !== today) {
                             AppState.user.watchedAds = 0;
@@ -861,6 +863,7 @@
                         AppState.user.lastAdResetDate = today;
                         AppState.user.watchedAds = 0;
                         AppState.user.lastMiningTime = now;
+                        AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
                     }
                 } catch(e) {
                     console.warn("Session offline/fallback:", e);
@@ -981,6 +984,7 @@
                         total_taps: AppState.user.totalTaps,
                         last_spin_time: AppState.user.lastSpinTime,
                         has_drone: AppState.user.hasDrone,
+                        keyRequests: AppState.user.keyRequests, // Sync key requests data on server
                         last_earned: serverTimestamp()
                     });
                 } catch(e){}
@@ -1279,6 +1283,11 @@
                 }
 
                 AppState.user.coins -= cost;
+                
+                // Increment sent key request count inside user profile
+                if (!AppState.user.keyRequests) AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
+                AppState.user.keyRequests.sent = (AppState.user.keyRequests.sent || 0) + 1;
+                
                 FirebaseService.syncUserData();
 
                 const reqId = "req_" + Date.now();
