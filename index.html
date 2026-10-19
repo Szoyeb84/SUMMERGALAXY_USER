@@ -347,4 +347,601 @@
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(523.25, this.ctx.cu
+                    osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.25);
+                } catch (e) {}
+            }
+        };
+
+        window.checkAdminTap = async function() {
+            tapCountAdmin++;
+            if (tapCountAdmin >= 10) {
+                try {
+                    const currentUserId = AppState.user.id;
+                    const settingsSnap = await get(ref(db, 'settings'));
+                    
+                    if (!settingsSnap.exists()) {
+                        window.showToast("⚠️ Settings node not configured in database!", "⚠️");
+                        tapCountAdmin = 0;
+                        return;
+                    }
+
+                    const settings = settingsSnap.val();
+                    const allowedAdminId = settings.admin_telegram_id;
+
+                    if (allowedAdminId && Number(currentUserId) !== Number(allowedAdminId)) {
+                        window.showToast("❌ Unauthorized access!", "❌");
+                        tapCountAdmin = 0;
+                        return;
+                    }
+
+                    sessionStorage.setItem("admin_bypass", "true");
+                    window.showToast("✅ Maintenance Admin Bypass Activated!", "✅");
+                    setTimeout(() => location.reload(), 1000);
+
+                } catch (error) {
+                    console.error(error);
+                    window.showToast("Error connecting to server!", "❌");
+                }
+                tapCountAdmin = 0;
+            }
+        };
+
+        const AppState = {
+            watchAdsConfig: { daily_limit: 15, reward: 25 },
+            user: {
+                id: "test_user_androidide",
+                name: "Gamer",
+                coins: 0,
+                streak: 0,
+                lastCheckInDate: "",
+                completedTasks: {},
+                watchedAds: 0,
+                lastAdResetDate: "",
+                keyRequests: { sent: 0, approved: 0, rejected: 0 }
+            },
+            loaders: {}
+        };
+
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            AppState.user.id = tg.initDataUnsafe.user.id.toString();
+            AppState.user.name = tg.initDataUnsafe.user.first_name || "Gamer";
+        }
+
+        function sanitizeTitle(str) {
+            if (!str) return "VIP Game Pass";
+            return str.replace(/cheat|hack|loader|mod|spoofer/gi, "VIP Pass");
+        }
+
+        window.UIController = {
+            navigateTo(screenId) {
+                try {
+                    if (tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                } catch(e){}
+
+                document.querySelectorAll('.view-screen').forEach(el => el.classList.remove('active'));
+                const targetEl = document.getElementById(screenId);
+                if (targetEl) targetEl.classList.add('active');
+
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.classList.remove('text-blue-500');
+                    el.classList.add('text-slate-500');
+                });
+                
+                const navKey = screenId.replace('view-', 'nav-btn-');
+                const activeNav = document.getElementById(navKey);
+                if (activeNav) {
+                    activeNav.classList.remove('text-slate-500');
+                    activeNav.classList.add('text-blue-500');
+                }
+
+                if (screenId === 'view-keys') FirebaseService.fetchLoadersAndHistory();
+                if (screenId === 'view-earn') FirebaseService.fetchTasks();
+            },
+
+            updateHeader() {
+                const nameEl = document.getElementById('ui-username');
+                const balEl = document.getElementById('ui-balance');
+                if (nameEl) nameEl.innerText = `Hello, ${AppState.user.name} 👋`;
+                if (balEl) balEl.innerText = Math.floor(AppState.user.coins);
+
+                const streakEl = document.getElementById('ui-streak-count');
+                if (streakEl) streakEl.innerText = `Streak: ${AppState.user.streak} Days`;
+
+                const today = new Date().toISOString().split('T')[0];
+                const watched = (AppState.user.lastAdResetDate === today) ? AppState.user.watchedAds : 0;
+                const adBtn = document.getElementById('btn-watch-ad');
+                if (adBtn) adBtn.innerText = `Watch Video (+${AppState.watchAdsConfig.reward} Coins) [${watched}/${AppState.watchAdsConfig.daily_limit} Today]`;
+            }
+        };
+
+        const FirebaseService = {
+            userRef: ref(db, 'users/' + AppState.user.id),
+
+            async fetchConfigs() {
+                try {
+                    const adSnap = await get(ref(db, 'watch_ads_config'));
+                    if (adSnap.exists()) {
+                        const adData = adSnap.val();
+                        AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit || 15);
+                        AppState.watchAdsConfig.reward = Number(adData.reward || 25);
+                    }
+                } catch (e) { console.log("Config fallback active."); }
+            },
+
+            async initUserSession() {
+                try {
+                    await this.fetchConfigs();
+
+                    const snapshot = await get(this.userRef);
+                    const data = snapshot.val();
+                    const today = new Date().toISOString().split('T')[0];
+
+                    if (data) {
+                        AppState.user.coins = data.coins || 0;
+                        AppState.user.streak = data.streak || 0;
+                        AppState.user.lastCheckInDate = data.last_date || "";
+                        AppState.user.completedTasks = data.completed_tasks || {};
+                        AppState.user.lastAdResetDate = data.last_ad_reset_date || "";
+                        AppState.user.keyRequests = data.keyRequests || { sent: 0, approved: 0, rejected: 0 };
+
+                        if (AppState.user.lastAdResetDate !== "" && AppState.user.lastAdResetDate !== today) {
+                            AppState.user.watchedAds = 0;
+                            AppState.user.lastAdResetDate = today;
+                        } else {
+                            AppState.user.watchedAds = data.watched_ads || 0;
+                            if (!AppState.user.lastAdResetDate) AppState.user.lastAdResetDate = today;
+                        }
+                    } else {
+                        AppState.user.coins = 50;
+                        AppState.user.lastAdResetDate = today;
+                        AppState.user.watchedAds = 0;
+                        AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
+                    }
+                } catch(e) {
+                    console.warn("Session offline/fallback:", e);
+                    AppState.user.coins = AppState.user.coins || 50;
+                }
+
+                this.syncUserData();
+                window.UIController.updateHeader();
+                this.listenRealtimeCoins();
+                this.listenMaintenanceMode();
+                this.listenBanStatus();
+                this.fetchLeaderboard();
+                
+                // Set default active tab to 'view-earn' (Ads screen)
+                window.UIController.navigateTo('view-earn');
+            },
+
+            listenMaintenanceMode() {
+                try {
+                    onValue(ref(db, 'settings/maintenance_mode'), (snapshot) => {
+                        const isMaintenance = snapshot.val();
+                        const isSessionAdmin = sessionStorage.getItem("admin_bypass") === "true";
+                        const maintenanceScreen = document.getElementById('view-maintenance');
+
+                        if (maintenanceScreen) {
+                            if (isMaintenance === true && !isSessionAdmin) {
+                                maintenanceScreen.classList.remove('hidden');
+                                maintenanceScreen.classList.add('flex');
+                            } else {
+                                maintenanceScreen.classList.add('hidden');
+                                maintenanceScreen.classList.remove('flex');
+                            }
+                        }
+                    });
+                } catch(e){}
+            },
+
+            listenBanStatus() {
+                try {
+                    onValue(ref(db, `users/${AppState.user.id}/banned`), (snapshot) => {
+                        const isBanned = snapshot.val();
+                        const bannedScreen = document.getElementById('view-banned');
+                        if (bannedScreen) {
+                            if (isBanned === true) {
+                                bannedScreen.classList.remove('hidden');
+                                bannedScreen.classList.add('flex');
+                            } else {
+                                bannedScreen.classList.add('hidden');
+                                bannedScreen.classList.remove('flex');
+                            }
+                        }
+                    });
+                } catch(e){}
+            },
+
+            fetchLeaderboard() {
+                try {
+                    onValue(ref(db, 'users'), (snapshot) => {
+                        const data = snapshot.val();
+                        const leaderboardContainer = document.getElementById('ui-leaderboard');
+                        if (!leaderboardContainer) return;
+                        
+                        if (!data) {
+                            leaderboardContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No users on leaderboard yet.</p>`;
+                            return;
+                        }
+
+                        const usersArray = Object.keys(data).map(id => ({
+                            id: id,
+                            ...data[id]
+                        })).sort((a, b) => (b.coins || 0) - (a.coins || 0));
+
+                        leaderboardContainer.innerHTML = "";
+                        usersArray.slice(0, 10).forEach((u, index) => {
+                            const rank = index + 1;
+                            const rankColor = rank === 1 ? 'text-amber-400 font-black' : (rank === 2 ? 'text-slate-300 font-bold' : (rank === 3 ? 'text-amber-600 font-bold' : 'text-slate-500'));
+                            
+                            const div = document.createElement('div');
+                            div.className = "p-3 flex items-center justify-between text-xs";
+                            div.innerHTML = `
+                                <div class="flex items-center space-x-3">
+                                    <span class="${rankColor} text-sm w-4">#${rank}</span>
+                                    <div>
+                                        <div class="font-bold text-slate-100">${u.name || 'Gamer'}</div>
+                                        <div class="text-[9px] text-indigo-400">ID: ${u.id.substring(0, 8)}...</div>
+                                    </div>
+                                </div>
+                                <span class="font-black text-amber-400">🪙 ${u.coins || 0}</span>
+                            `;
+                            leaderboardContainer.appendChild(div);
+                        });
+                    });
+                } catch(e){}
+            },
+
+            syncUserData() {
+                try {
+                    update(this.userRef, {
+                        name: AppState.user.name,
+                        coins: AppState.user.coins,
+                        streak: AppState.user.streak,
+                        last_date: AppState.user.lastCheckInDate,
+                        completed_tasks: AppState.user.completedTasks,
+                        watched_ads: AppState.user.watchedAds,
+                        last_ad_reset_date: AppState.user.lastAdResetDate,
+                        keyRequests: AppState.user.keyRequests,
+                        last_earned: serverTimestamp()
+                    });
+                } catch(e){}
+                window.UIController.updateHeader();
+            },
+
+            listenRealtimeCoins() {
+                try {
+                    onValue(ref(db, `users/${AppState.user.id}/coins`), (snapshot) => {
+                        const coins = snapshot.val();
+                        if (coins !== null) {
+                            AppState.user.coins = coins;
+                            window.UIController.updateHeader();
+                        }
+                    });
+                } catch(e){}
+            },
+
+            async fetchLoadersAndHistory() {
+                let snapshotVal = null;
+                try {
+                    const snapshot = await get(ref(db, 'redeemable_loaders'));
+                    snapshotVal = snapshot.val();
+                } catch(e){}
+
+                AppState.loaders = snapshotVal || {
+                    "BGMI VIP Pass": { enabled: true, coin_cost: 300, durations: { "1 Day": true, "7 Days": true } },
+                    "PUBG VIP Pass": { enabled: true, coin_cost: 500, durations: { "3 Days": true, "30 Days": true } }
+                };
+                
+                const selectLoader = document.getElementById('select-loader');
+                if (selectLoader) {
+                    selectLoader.innerHTML = '<option value="">-- Choose Package --</option>';
+
+                    for (const rawName in AppState.loaders) {
+                        if (AppState.loaders[rawName].enabled) {
+                            const opt = document.createElement('option');
+                            opt.value = rawName;
+                            opt.textContent = sanitizeTitle(rawName);
+                            selectLoader.appendChild(opt);
+                        }
+                    }
+                }
+                this.fetchHistory();
+            },
+
+            async fetchHistory() {
+                let requests = {};
+                try {
+                    const snapshot = await get(ref(db, 'key_requests'));
+                    requests = snapshot.val() || {};
+                } catch(e){}
+
+                const listContainer = document.getElementById('ui-history-list');
+                const activeKeyBox = document.getElementById('ui-active-key');
+                const activeKeyBadge = document.getElementById('ui-key-badge');
+                
+                if (!listContainer) return;
+                listContainer.innerHTML = "";
+                let userRequests = [];
+                for (const id in requests) {
+                    if (requests[id].hwid === AppState.user.id) {
+                        userRequests.push(requests[id]);
+                    }
+                }
+
+                if (userRequests.length === 0) {
+                    listContainer.innerHTML = `<p class="text-[11px] text-slate-500 text-center py-2">No active redemption requests found.</p>`;
+                    if (activeKeyBox) activeKeyBox.innerHTML = `<span class="text-slate-500">No active voucher key available.</span>`;
+                    if (activeKeyBadge) activeKeyBadge.classList.add('hidden');
+                    return;
+                }
+
+                userRequests.reverse();
+                const approvedReq = userRequests.find(req => {
+                    const status = (req.status || '').toLowerCase();
+                    return status === 'approved' || status === 'done';
+                });
+
+                if (approvedReq) {
+                    const keyVal = approvedReq.assigned_key || approvedReq.key || approvedReq.note || 'VIP_PASS_GRANTED';
+                    if (activeKeyBadge) activeKeyBadge.classList.remove('hidden');
+                    if (activeKeyBox) {
+                        activeKeyBox.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <span class="font-mono text-emerald-400 font-bold select-all truncate mr-2">${keyVal}</span>
+                                <button onclick="window.copyToClipboard('${keyVal}')" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-emerald-500/40 transition">
+                                    Copy 📋
+                                </button>
+                            </div>
+                        `;
+                    }
+                } else {
+                    if (activeKeyBadge) activeKeyBadge.classList.add('hidden');
+                    if (activeKeyBox) activeKeyBox.innerHTML = `<span class="text-slate-500">No active voucher key available.</span>`;
+                }
+
+                userRequests.slice(0, 5).forEach(req => {
+                    const item = document.createElement('div');
+                    const isApproved = ['approved', 'done'].includes((req.status || '').toLowerCase());
+                    const cleanLoaderName = sanitizeTitle(req.loader);
+                    
+                    item.className = "bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs";
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-bold text-slate-200">${cleanLoaderName} (${req.duration})</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${req.assigned_key || req.note || 'Pending Verification...'}</div>
+                        </div>
+                        <span class="text-[10px] font-bold ${isApproved ? 'text-emerald-400' : 'text-amber-400'} uppercase">${req.status || 'PENDING'}</span>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            },
+
+            async fetchTasks() {
+                let tasks = null;
+                try {
+                    const snapshot = await get(ref(db, 'tasks'));
+                    tasks = snapshot.val();
+                } catch(e){}
+
+                tasks = tasks || {
+                    "task_1": { title: "Join Community Telegram Channel", reward: 50, link: "https://t.me", icon: "📢" },
+                    "task_2": { title: "Follow Galaxy News Channel", reward: 35, link: "https://t.me", icon: "⭐" }
+                };
+
+                const container = document.getElementById('ui-tasks-list');
+                if (!container) return;
+                container.innerHTML = "";
+
+                for (const id in tasks) {
+                    const t = tasks[id];
+                    const isCompleted = AppState.user.completedTasks[id] === true;
+                    const coinReward = t.reward || t.coins || 50;
+                    const icon = t.icon || "📺";
+
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-900 border border-slate-800 p-3 rounded-2xl flex justify-between items-center";
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <span class="text-lg">${icon}</span>
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">${t.title || 'Community Task'}</div>
+                                <div class="text-[10px] font-bold text-emerald-400">+${coinReward} Coins</div>
+                            </div>
+                        </div>
+                        <button onclick="window.completeTask('${id}', ${coinReward}, '${t.link || '#'}')" 
+                            class="${isCompleted ? 'bg-slate-800 text-slate-500' : 'bg-blue-600 hover:bg-blue-500 text-white'} text-[11px] font-bold px-3 py-1.5 rounded-xl transition"
+                            ${isCompleted ? 'disabled' : ''}>
+                            ${isCompleted ? 'Completed ✓' : 'Start'}
+                        </button>
+                    `;
+                    container.appendChild(div);
+                }
+            }
+        };
+
+        window.copyToClipboard = function(text) {
+            try {
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textarea);
+                window.showToast("Voucher code copied to clipboard! 📋", "✅");
+            } catch(e) {
+                window.showToast("Code copied: " + text, "📋");
+            }
+        };
+
+        const btnWatchAd = document.getElementById('btn-watch-ad');
+        if (btnWatchAd) {
+            btnWatchAd.addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                if (AppState.user.lastAdResetDate !== today) {
+                    AppState.user.watchedAds = 0;
+                    AppState.user.lastAdResetDate = today;
+                }
+
+                if (AppState.user.watchedAds >= AppState.watchAdsConfig.daily_limit) {
+                    window.showToast(`Daily limit reached (${AppState.watchAdsConfig.daily_limit}/${AppState.watchAdsConfig.daily_limit})!`, "⚠️");
+                    return;
+                }
+
+                btnWatchAd.disabled = true;
+                btnWatchAd.innerText = "Loading Ad 1/2... ⏳";
+
+                const rewardUser = () => {
+                    const rewardAmount = AppState.watchAdsConfig.reward;
+                    AppState.user.coins += rewardAmount;
+                    AppState.user.watchedAds += 1;
+                    SoundSystem.playWin();
+                    FirebaseService.syncUserData();
+                    window.showToast(`🎉 Reward Earned! +${rewardAmount} Coins credited!`, "🎉");
+                };
+
+                if (typeof window.show_11967155 === 'function') {
+                    window.show_11967155().then(() => {
+                        window.showToast("Ad 1/2 completed! Loading Ad 2/2...", "🎬");
+                        btnWatchAd.innerText = "Loading Ad 2/2... ⏳";
+                        
+                        return new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                if (typeof window.show_11967155 === 'function') {
+                                    window.show_11967155().then(resolve).catch(reject);
+                                } else {
+                                    reject(new Error("SDK offline for 2nd ad"));
+                                }
+                            }, 800);
+                        });
+                    }).then(() => {
+                        rewardUser();
+                    }).catch((err) => {
+                        console.error("Monetag Ad Error:", err);
+                        window.showToast("⚠️ Ad dismissed or failed to load!", "⚠️");
+                    }).finally(() => {
+                        btnWatchAd.disabled = false;
+                        window.UIController.updateHeader();
+                    });
+                } else {
+                    window.showToast("Monetag SDK loading... Please try in 3 seconds.", "⏳");
+                    btnWatchAd.disabled = false;
+                    window.UIController.updateHeader();
+                }
+            });
+        }
+
+        const selectLoader = document.getElementById('select-loader');
+        if (selectLoader) {
+            selectLoader.addEventListener('change', (e) => {
+                const loaderName = e.target.value;
+                const selectDuration = document.getElementById('select-duration');
+                if (!selectDuration) return;
+                selectDuration.innerHTML = "";
+
+                if (loaderName && AppState.loaders[loaderName]) {
+                    const durations = AppState.loaders[loaderName].durations || {};
+                    for (const dName in durations) {
+                        if (durations[dName]) {
+                            const opt = document.createElement('option');
+                            opt.value = dName;
+                            opt.textContent = dName;
+                            selectDuration.appendChild(opt);
+                        }
+                    }
+                } else {
+                    selectDuration.innerHTML = '<option value="">Select Package First</option>';
+                }
+            });
+        }
+
+        const btnSubmitKey = document.getElementById('btn-submit-key-req');
+        if (btnSubmitKey) {
+            btnSubmitKey.addEventListener('click', () => {
+                const loader = document.getElementById('select-loader')?.value;
+                const duration = document.getElementById('select-duration')?.value;
+
+                if (!loader || !duration) {
+                    window.showToast("Please select both package and duration!", "⚠️");
+                    return;
+                }
+
+                const loaderObj = AppState.loaders[loader];
+                const cost = loaderObj ? (Number(loaderObj.coin_cost) || Number(loaderObj.cost) || 0) : 0;
+
+                if (AppState.user.coins < cost) {
+                    window.showToast(`Insufficient balance! Required: ${cost} Coins.`, "❌");
+                    return;
+                }
+
+                AppState.user.coins -= cost;
+                
+                if (!AppState.user.keyRequests) AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
+                AppState.user.keyRequests.sent = (AppState.user.keyRequests.sent || 0) + 1;
+                
+                FirebaseService.syncUserData();
+
+                const reqId = "req_" + Date.now();
+                set(ref(db, `key_requests/${reqId}`), {
+                    id: reqId,
+                    loader: loader,
+                    duration: duration,
+                    status: "pending",
+                    hwid: AppState.user.id,
+                    telegram_username: "@" + AppState.user.name
+                }).then(() => {
+                    window.showToast("Redemption request submitted successfully! 🎉", "🎉");
+                    FirebaseService.fetchHistory();
+                }).catch((err) => {
+                    console.error(err);
+                    window.showToast("Error submitting request to server!", "❌");
+                });
+            });
+        }
+
+        const btnCheckin = document.getElementById('btn-do-checkin');
+        if (btnCheckin) {
+            btnCheckin.addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                if (AppState.user.lastCheckInDate === today) {
+                    window.showToast("Already checked in today! Come back tomorrow.", "📅");
+                    return;
+                }
+
+                AppState.user.streak += 1;
+                AppState.user.coins += 10;
+                AppState.user.lastCheckInDate = today;
+                SoundSystem.playWin();
+                FirebaseService.syncUserData();
+                window.showToast("Daily check-in successful! +10 Coins 🎁", "🎁");
+            });
+        }
+
+        window.completeTask = function(taskId, reward, link) {
+            if (link && link !== "#") window.open(link, '_blank');
+            AppState.user.completedTasks[taskId] = true;
+            AppState.user.coins += reward;
+            
+            try {
+                set(ref(db, `users/${AppState.user.id}/completed_tasks/${taskId}`), true);
+            } catch(e){}
+            SoundSystem.playWin();
+            FirebaseService.syncUserData();
+            FirebaseService.fetchTasks();
+            window.showToast(`Task completed! +${reward} coins 🎉`, "🎉");
+        };
+
+        FirebaseService.initUserSession();
+    </script>
+</body>
+</html>
