@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>SummerGalaxy Rewards & Game Zone</title>
+    <title>SummerGalaxy - BGMI Winter Warfare Rewards</title>
     
     <!-- MONETAG REWARDED INTERSTITIAL SDK -->
     <script src='https://libtl.com/sdk.js' data-zone='11967155' data-sdk='show_11967155'></script>
@@ -13,40 +13,96 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap');
+
         body {
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            background-color: #030712;
+            background: #020617;
             touch-action: manipulation;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .heading-font {
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 1px;
         }
         .view-screen { display: none; }
         .view-screen.active { display: block; }
-        .glow-card {
-            box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.25);
+        
+        /* HIGH-END FROSTBITE THEME STYLES */
+        .ice-card {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(2, 132, 199, 0.05));
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(186, 230, 253, 0.2);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.15), inset 0 0 15px rgba(186, 230, 253, 0.08);
+        }
+        .ice-card-glow {
+            box-shadow: 0 0 40px -5px rgba(56, 189, 248, 0.4);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+        .ice-button {
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: #020617;
+            font-weight: 900;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            transition: all 0.2s ease;
+        }
+        .ice-button:active {
+            transform: scale(0.97);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
+            background: #38bdf8;
             border-radius: 4px;
+        }
+
+        /* DYNAMIC SNOWSTORM particles */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #bae6fd;
+            font-size: 1rem;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 1;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(-10px) rotate(0deg) translateX(0);
+                opacity: 0.9;
+            }
+            50% {
+                transform: translateY(50vh) rotate(180deg) translateX(15px);
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg) translateX(-15px);
+                opacity: 0.1;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans pb-24 antialiased selection:bg-blue-500 selection:text-white relative min-h-screen">
+<body class="bg-slate-950 text-slate-100 pb-24 antialiased selection:bg-sky-400 selection:text-slate-950 relative min-h-screen">
 
-    <!-- CUSTOM TOAST NOTIFICATION -->
-    <div id="custom-toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-indigo-500/50 text-slate-100 text-xs px-4 py-2.5 rounded-2xl shadow-2xl z-[120] hidden items-center space-x-2 transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-none backdrop-blur-md">
-        <span id="toast-icon" class="text-base">ℹ️</span>
-        <span id="toast-msg" class="font-bold">Notification</span>
+    <!-- SNOWSTORM CONTAINER -->
+    <div id="snow-container" class="pointer-events-none fixed inset-0 z-0 overflow-hidden"></div>
+
+    <!-- CUSTOM FROST TOAST NOTIFICATION -->
+    <div id="custom-toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-sky-400/50 text-slate-100 text-xs px-4 py-3 rounded-2xl shadow-2xl z-[120] hidden items-center space-x-2.5 transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-none backdrop-blur-md">
+        <span id="toast-icon" class="text-lg">❄️</span>
+        <span id="toast-msg" class="font-bold tracking-wide">Notification</span>
     </div>
 
     <!-- 🚫 BANNED OVERLAY SCREEN -->
-    <div id="view-banned" class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-[110] hidden flex-col items-center justify-center p-6 text-center space-y-4">
-        <div class="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-center justify-center text-4xl animate-pulse shadow-lg shadow-red-500/10">
+    <div id="view-banned" class="fixed inset-0 bg-slate-950/98 backdrop-blur-2xl z-[110] hidden flex-col items-center justify-center p-6 text-center space-y-4">
+        <div class="w-20 h-20 bg-red-500/10 border border-red-500/30 rounded-3xl flex items-center justify-center text-4xl animate-pulse shadow-lg shadow-red-500/20">
             🚫
         </div>
-        <h2 class="text-xl font-black text-red-500">Account Banned</h2>
+        <h2 class="text-2xl font-black text-red-500 uppercase tracking-wider heading-font">Account Frozen & Banned</h2>
         <p class="text-xs text-slate-400 max-w-xs leading-relaxed">
             Your account has been suspended by the administrator due to policy violations or suspicious activity.
         </p>
@@ -56,135 +112,137 @@
     </div>
 
     <!-- 🛠️ MAINTENANCE OVERLAY SCREEN -->
-    <div id="view-maintenance" class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-[100] hidden flex-col items-center justify-center p-6 text-center space-y-4">
-        <div onclick="checkAdminTap()" class="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-center justify-center text-4xl animate-bounce shadow-lg shadow-amber-500/10 cursor-pointer select-none">
-            🛠️
+    <div id="view-maintenance" class="fixed inset-0 bg-slate-950/98 backdrop-blur-2xl z-[100] hidden flex-col items-center justify-center p-6 text-center space-y-4">
+        <div onclick="checkAdminTap()" class="w-20 h-20 bg-sky-500/10 border border-sky-500/30 rounded-3xl flex items-center justify-center text-4xl animate-bounce shadow-lg shadow-sky-500/20 cursor-pointer select-none">
+            🧊
         </div>
-        <h2 class="text-xl font-black text-slate-100">App Under Maintenance</h2>
+        <h2 class="text-2xl font-black text-sky-300 uppercase tracking-wider heading-font">Winter Festival Server Maintenance</h2>
         <p class="text-xs text-slate-400 max-w-xs leading-relaxed">
-            We are upgrading our reward servers & adding new galaxy features. Please check back shortly!
+            We are freezing the servers to load BGMI Winter Special Rewards & Passes. Check back soon! 🏔️
         </p>
-        <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-[11px] font-mono text-amber-400 shadow-inner">
-            Status: Maintenance Active ⏳
+        <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-[11px] font-mono text-sky-400 shadow-inner">
+            Status: Frost Lock Active ⏳
         </div>
     </div>
 
     <!-- TOP HEADER -->
-    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex justify-between items-center shadow-lg">
+    <header class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-sky-500/20 px-4 py-3 flex justify-between items-center shadow-2xl">
         <div class="flex items-center space-x-3">
             <div class="relative">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-md shadow-blue-500/30">
-                    SG
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-400 via-blue-600 to-indigo-700 flex items-center justify-center font-black text-slate-950 text-base shadow-lg shadow-sky-500/30">
+                    ❄️
                 </div>
-                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-sky-400 rounded-full border-2 border-slate-950 animate-ping"></div>
             </div>
             <div>
-                <h1 id="ui-username" class="font-bold text-xs text-slate-100">Hello, Gamer 👋</h1>
-                <p id="ui-status" class="text-[10px] text-emerald-400 font-medium flex items-center space-x-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span id="ui-rank-label">Rank: Explorer (Lvl 1)</span>
+                <h1 id="ui-username" class="font-black text-xs text-slate-100">Hello, Winter Survivor 👋</h1>
+                <p id="ui-status" class="text-[10px] text-sky-400 font-bold flex items-center space-x-1 uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+                    <span id="ui-rank-label">Rank: Frost Commando</span>
                 </p>
             </div>
         </div>
         
-        <div class="bg-slate-800/90 border border-slate-700/80 px-3.5 py-1.5 rounded-2xl flex items-center space-x-2 shadow-inner">
+        <div class="bg-slate-900/90 border border-sky-400/40 px-3.5 py-1.5 rounded-2xl flex items-center space-x-2 shadow-inner">
             <span class="text-sm">🪙</span>
             <span id="ui-balance" class="text-xs font-black text-amber-400 tracking-wide">0</span>
         </div>
     </header>
 
     <!-- LIVE TICKER ANNOUNCEMENT -->
-    <div class="px-4 pt-3">
-        <div class="bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/20 px-3.5 py-2 rounded-2xl flex items-center space-x-2 text-[11px] text-slate-300">
-            <span class="text-xs animate-bounce">📢</span>
-            <marquee class="font-medium text-slate-300">🎬 Watch Sponsored Ads to earn instant coins & redeem VIP Game Access Vouchers!</marquee>
+    <div class="px-4 pt-3 relative z-10">
+        <div class="bg-gradient-to-r from-sky-950/80 via-slate-950 to-blue-950/80 border border-sky-500/30 px-3.5 py-2.5 rounded-2xl flex items-center space-x-2.5 text-[11px] text-sky-200 shadow-lg">
+            <span class="text-sm animate-bounce">🧊</span>
+            <marquee class="font-bold tracking-wide text-sky-200">❄️ BGMI Winter Festival Edition Live! Watch Sponsored Video Ads to farm Ice Coins & redeem BGMI VIP Passes!</marquee>
         </div>
     </div>
 
     <!-- MAIN VIEWS CONTAINER -->
-    <main class="p-4 max-w-md mx-auto space-y-4">
+    <main class="p-4 max-w-md mx-auto space-y-4 relative z-10">
 
-        <!-- SCREEN 1: TAP GAME ZONE (DISABLED / UNDER DEVELOPMENT) -->
+        <!-- SCREEN 1: TAP GAME ZONE (UNDER DEVELOPMENT) -->
         <section id="view-game" class="view-screen active space-y-4">
-            <div class="bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-900 border border-indigo-500/30 p-8 rounded-3xl text-center space-y-4 glow-card my-8">
-                <div class="w-20 h-20 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-indigo-500/10 animate-pulse">
-                    🚀
+            <div class="ice-card ice-card-glow p-8 rounded-3xl text-center space-y-5 my-6">
+                <div class="w-20 h-20 bg-sky-500/10 border border-sky-400/30 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-xl shadow-sky-500/20 animate-pulse">
+                    🏔️
                 </div>
                 <div>
-                    <h2 class="text-lg font-black text-white">Galaxy Tap Game Under Maintenance</h2>
-                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-                        Tap Orb and Upgrades are currently under development for major upgrades.
+                    <span class="bg-sky-400/10 text-sky-300 text-[10px] font-black px-3 py-1 rounded-full border border-sky-400/30 uppercase tracking-widest">BGMI WINTER LAUNCH</span>
+                    <h2 class="text-2xl font-black text-white mt-2 heading-font tracking-wide uppercase">Frost Orb Tapper — Under Development 🛠️</h2>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        We are designing an extreme Ice Tap Mode with custom BGMI Winter Vouchers & multipliers! Releasing strictly alongside the BGMI Winter Festival Update. ❄️
                     </p>
                 </div>
-                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-2xl">
-                    <span class="text-xs font-bold text-amber-400">💡 Tip: You can still earn coins by watching Sponsored Ads in the "Earn Extra" section!</span>
+                <div class="bg-slate-950/90 border border-sky-500/20 p-3.5 rounded-2xl">
+                    <span class="text-xs font-black text-amber-400">⚡ Earn coins right now by watching Sponsored Video Ads!</span>
                 </div>
-                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition uppercase tracking-wider">
-                    🎬 Go to Ads & Earn Coins
+                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full ice-button font-black text-xs py-4 rounded-2xl transition uppercase tracking-wider text-slate-950">
+                    🎬 Watch Video Ads & Earn Coins
                 </button>
             </div>
         </section>
 
-        <!-- SCREEN 2: SPIN WHEEL MINIGAME (DISABLED / UNDER DEVELOPMENT) -->
+        <!-- SCREEN 2: SPIN WHEEL MINIGAME (UNDER DEVELOPMENT) -->
         <section id="view-wheel" class="view-screen space-y-4">
-            <div class="bg-gradient-to-br from-purple-950/80 via-slate-900 to-slate-900 border border-purple-500/30 p-8 rounded-3xl text-center space-y-4 glow-card my-8">
-                <div class="w-20 h-20 bg-purple-500/10 border border-purple-500/20 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-purple-500/10 animate-bounce">
+            <div class="ice-card ice-card-glow p-8 rounded-3xl text-center space-y-5 my-6">
+                <div class="w-20 h-20 bg-indigo-500/10 border border-indigo-400/30 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-xl shadow-indigo-500/20 animate-bounce">
                     🎡
                 </div>
                 <div>
-                    <h2 class="text-lg font-black text-white">Spin Wheel Under Maintenance</h2>
-                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-                        Lucky Wheel feature is currently undergoing maintenance and will return soon with bigger rewards!
+                    <span class="bg-indigo-400/10 text-indigo-300 text-[10px] font-black px-3 py-1 rounded-full border border-indigo-400/30 uppercase tracking-widest">WINTER EVENT SPECIAL</span>
+                    <h2 class="text-2xl font-black text-white mt-2 heading-font tracking-wide uppercase">Glacier Lucky Wheel — Under Development 🛠️</h2>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        The 3-Hour Spin Wheel is getting a complete BGMI Glacier overhaul with instant VIP Key drops! Launching soon. ☃️
                     </p>
                 </div>
-                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-2xl">
-                    <span class="text-xs font-bold text-emerald-400">⚡ Check back soon for exciting rewards!</span>
+                <div class="bg-slate-950/90 border border-sky-500/20 p-3.5 rounded-2xl">
+                    <span class="text-xs font-black text-sky-300">💡 Stay tuned for the official Winter Festival release!</span>
                 </div>
-                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-purple-600/30 transition uppercase tracking-wider">
-                    💰 Earn Coins via Ads
+                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full ice-button font-black text-xs py-4 rounded-2xl transition uppercase tracking-wider text-slate-950">
+                    💰 Farm Coins in Earn Section
                 </button>
             </div>
         </section>
 
         <!-- SCREEN 3: VIP PASS VOUCHER STORE -->
         <section id="view-keys" class="view-screen space-y-4">
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
-                <h2 class="text-sm font-bold text-slate-100 flex items-center space-x-1.5">
-                    <span>🎫</span> <span>Claim VIP Pass Voucher</span>
+            <div class="ice-card p-5 rounded-3xl space-y-3.5">
+                <h2 class="text-base font-black text-sky-200 flex items-center space-x-2 heading-font tracking-wide uppercase">
+                    <span class="text-xl">🎫</span> <span>BGMI Winter VIP Pass Store</span>
                 </h2>
-                <p class="text-xs text-slate-400">Select your preferred access package and duration to redeem your earned coins.</p>
+                <p class="text-xs text-slate-300">Select your BGMI VIP Pass package and duration to redeem your earned Ice Coins.</p>
                 
                 <div class="space-y-3 pt-1">
                     <div>
-                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">SELECT REWARD PACKAGE</label>
-                        <select id="select-loader" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
-                            <option value="">Loading available packages...</option>
+                        <label class="text-[10px] text-sky-400 font-extrabold uppercase tracking-wider block mb-1">SELECT REWARD PACKAGE</label>
+                        <select id="select-loader" class="w-full bg-slate-950 border border-sky-500/30 rounded-xl p-3.5 text-xs text-slate-200 focus:outline-none focus:border-sky-400 font-bold">
+                            <option value="">Loading BGMI VIP packages...</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-[10px] text-slate-400 font-semibold block mb-1">SELECT ACCESS PERIOD</label>
-                        <select id="select-duration" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                        <label class="text-[10px] text-sky-400 font-extrabold uppercase tracking-wider block mb-1">SELECT DURATION</label>
+                        <select id="select-duration" class="w-full bg-slate-950 border border-sky-500/30 rounded-xl p-3.5 text-xs text-slate-200 focus:outline-none focus:border-sky-400 font-bold">
                             <option value="">Select Package First</option>
                         </select>
                     </div>
                 </div>
 
-                <button id="btn-submit-key-req" class="w-full bg-blue-600 hover:bg-blue-500 font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-blue-600/25 transition">
-                    Request Pass Redemption
+                <button id="btn-submit-key-req" class="w-full ice-button font-black text-xs py-4 rounded-xl transition uppercase tracking-wider text-slate-950">
+                    Request Pass Redemption ❄️
                 </button>
             </div>
 
-            <div class="bg-slate-900 border border-emerald-500/30 p-4 rounded-2xl space-y-2">
+            <div class="bg-slate-950/90 border border-emerald-500/40 p-4 rounded-2xl space-y-2 shadow-lg">
                 <div class="flex justify-between items-center">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Active Approved Voucher Key</span>
+                    <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Active Approved BGMI Key</span>
                     <span id="ui-key-badge" class="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold hidden">ACTIVE</span>
                 </div>
-                <div id="ui-active-key" class="font-bold text-slate-100 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <div id="ui-active-key" class="font-bold text-slate-100 text-xs bg-slate-900 p-3 rounded-xl border border-slate-800">
                     <span class="text-slate-500">No active pass key currently redeemed.</span>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <div class="bg-slate-950/90 border border-slate-800 p-4 rounded-2xl space-y-3">
                 <h3 class="text-xs font-bold text-slate-300">Redemption Request Logs</h3>
                 <div id="ui-history-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                     <p class="text-[11px] text-slate-500 text-center py-2">Loading logs...</p>
@@ -194,14 +252,14 @@
 
         <!-- SCREEN 4: LEADERBOARD & RANKS -->
         <section id="view-ranks" class="view-screen space-y-4">
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
-                <h2 class="text-sm font-bold text-slate-100 flex items-center space-x-1.5">
-                    <span>🏆</span> <span>Galaxy Leaderboard</span>
+            <div class="ice-card p-4 rounded-2xl space-y-1">
+                <h2 class="text-base font-black text-sky-200 flex items-center space-x-2 heading-font tracking-wide uppercase">
+                    <span class="text-xl">🏆</span> <span>Winter Leaderboard</span>
                 </h2>
-                <p class="text-xs text-slate-400">Top gamers ranking based on overall coins earned!</p>
+                <p class="text-xs text-slate-300">Top survivors ranked by total Ice Coins earned!</p>
             </div>
 
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-800/60" id="ui-leaderboard">
+            <div class="bg-slate-950/90 border border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-800/80" id="ui-leaderboard">
                 <p class="text-xs text-slate-500 text-center py-4">Loading live leaderboard...</p>
             </div>
         </section>
@@ -209,41 +267,42 @@
         <!-- SCREEN 5: EARN EXTRA COINS (PRIMARY EARNING ZONE) -->
         <section id="view-earn" class="view-screen space-y-4">
             <!-- SPONSORED REWARD VIDEO (PRIMARY) -->
-            <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 border border-indigo-500/30 p-4 rounded-2xl space-y-3 text-center glow-card">
-                <div class="w-10 h-10 bg-indigo-500/10 rounded-xl border border-indigo-500/20 flex items-center justify-center mx-auto text-xl">
+            <div class="ice-card ice-card-glow p-6 rounded-3xl space-y-4 text-center">
+                <div class="w-14 h-14 bg-sky-500/10 rounded-2xl border border-sky-400/30 flex items-center justify-center mx-auto text-3xl shadow-inner">
                     🎬
                 </div>
                 <div>
-                    <h3 class="text-xs font-bold text-slate-100">Sponsored High Reward Video</h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Watch short ads to receive bonus coins instantly.</p>
+                    <span class="bg-amber-500/10 text-amber-400 text-[9px] font-black px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-widest">HIGHEST COIN PAYOUT</span>
+                    <h3 class="text-base font-black text-white mt-1.5 uppercase heading-font text-xl">Sponsored Winter Reward Video</h3>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Watch short ad clips to earn instant coins for BGMI Vouchers.</p>
                 </div>
-                <button id="btn-watch-ad" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition">
+                <button id="btn-watch-ad" class="w-full ice-button font-black text-xs py-4 rounded-2xl transition uppercase tracking-wider text-slate-950">
                     Watch Video (+25 Coins) [0/15 Today]
                 </button>
             </div>
 
             <!-- DAILY CHECK-IN -->
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+            <div class="bg-slate-950/90 border border-slate-800 p-4 rounded-2xl space-y-2">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xs font-bold text-slate-100 flex items-center space-x-1.5">
-                        <span>📅</span> <span>Daily Login Bonus</span>
+                        <span>📅</span> <span>Daily Frost Streak</span>
                     </h2>
                     <span id="ui-streak-count" class="text-xs font-bold text-amber-400">Streak: 0 Days</span>
                 </div>
-                <button id="btn-do-checkin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">
+                <button id="btn-do-checkin" class="w-full bg-sky-600 hover:bg-sky-500 text-slate-950 font-black text-xs py-3 rounded-xl shadow-md transition">
                     Claim Daily Bonus (+10 Coins)
                 </button>
             </div>
 
-            <!-- PASSIVE MINING (DISABLED / UNDER DEVELOPMENT) -->
-            <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl space-y-2 opacity-75 relative overflow-hidden">
+            <!-- PASSIVE MINING (UNDER DEVELOPMENT) -->
+            <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-2xl space-y-2 opacity-70 relative overflow-hidden">
                 <div class="flex justify-between items-center">
                     <span class="text-xs font-bold text-slate-400 flex items-center space-x-1">
-                        <span>⚡</span> <span>Passive Mining Vault</span>
+                        <span>⚡</span> <span>Glacier Passive Mining</span>
                     </span>
-                    <span class="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold px-2 py-0.5 rounded-full">UNDER DEVELOPMENT</span>
+                    <span class="text-[9px] bg-sky-400/10 text-sky-300 border border-sky-400/30 font-black px-2.5 py-0.5 rounded-full uppercase">UNDER DEVELOPMENT 🛠️</span>
                 </div>
-                <button onclick="window.showToast('Mining Vault is undergoing maintenance!', '🛠️')" class="w-full bg-slate-800 text-slate-500 font-bold text-xs py-3 rounded-xl transition cursor-not-allowed">
+                <button onclick="window.showToast('Glacier Mining Vault is under development!', '🛠️')" class="w-full bg-slate-900 text-slate-600 font-bold text-xs py-3 rounded-xl transition cursor-not-allowed">
                     Mining Locked 🔒
                 </button>
             </div>
@@ -260,7 +319,7 @@
     </main>
 
     <!-- BOTTOM NAVIGATION BAR -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/90 py-2.5 px-2 z-50">
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-2xl border-t border-sky-500/20 py-2.5 px-2 z-50">
         <div class="max-w-md mx-auto flex justify-around items-center">
             <button onclick="window.UIController.navigateTo('view-game')" id="nav-btn-game" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
                 <span class="text-base">🎮</span>
@@ -270,7 +329,7 @@
                 <span class="text-base">🎡</span>
                 <span>Spin Wheel</span>
             </button>
-            <button onclick="window.UIController.navigateTo('view-earn')" id="nav-btn-earn" class="nav-item flex flex-col items-center space-y-1 text-blue-500 font-bold text-[10px]">
+            <button onclick="window.UIController.navigateTo('view-earn')" id="nav-btn-earn" class="nav-item flex flex-col items-center space-y-1 text-sky-400 font-bold text-[10px]">
                 <span class="text-base">💰</span>
                 <span>Earn Extra</span>
             </button>
@@ -312,7 +371,25 @@
 
         let tapCountAdmin = 0;
 
-        window.showToast = function(msg, icon = 'ℹ️') {
+        // DYNAMIC SNOWSTORM PARTICLES GENERATOR
+        function createSnowflakes() {
+            const container = document.getElementById('snow-container');
+            if (!container) return;
+            const flakes = ['❄', '❅', '❆', '✨'];
+            for (let i = 0; i < 25; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.innerText = flakes[Math.floor(Math.random() * flakes.length)];
+                flake.style.left = `${Math.random() * 100}vw`;
+                flake.style.animationDuration = `${4 + Math.random() * 6}s`;
+                flake.style.animationDelay = `${Math.random() * 5}s`;
+                flake.style.fontSize = `${0.7 + Math.random() * 0.7}rem`;
+                container.appendChild(flake);
+            }
+        }
+        createSnowflakes();
+
+        window.showToast = function(msg, icon = '❄️') {
             const toast = document.getElementById('custom-toast');
             const msgEl = document.getElementById('toast-msg');
             const iconEl = document.getElementById('toast-icon');
@@ -432,7 +509,7 @@
                 if (targetEl) targetEl.classList.add('active');
 
                 document.querySelectorAll('.nav-item').forEach(el => {
-                    el.classList.remove('text-blue-500');
+                    el.classList.remove('text-sky-400');
                     el.classList.add('text-slate-500');
                 });
                 
@@ -440,7 +517,7 @@
                 const activeNav = document.getElementById(navKey);
                 if (activeNav) {
                     activeNav.classList.remove('text-slate-500');
-                    activeNav.classList.add('text-blue-500');
+                    activeNav.classList.add('text-sky-400');
                 }
 
                 if (screenId === 'view-keys') FirebaseService.fetchLoadersAndHistory();
@@ -450,7 +527,7 @@
             updateHeader() {
                 const nameEl = document.getElementById('ui-username');
                 const balEl = document.getElementById('ui-balance');
-                if (nameEl) nameEl.innerText = `Hello, ${AppState.user.name} 👋`;
+                if (nameEl) nameEl.innerText = `Hello, ${AppState.user.name} ❄️`;
                 if (balEl) balEl.innerText = Math.floor(AppState.user.coins);
 
                 const streakEl = document.getElementById('ui-streak-count');
@@ -589,7 +666,7 @@
                                     <span class="${rankColor} text-sm w-4">#${rank}</span>
                                     <div>
                                         <div class="font-bold text-slate-100">${u.name || 'Gamer'}</div>
-                                        <div class="text-[9px] text-indigo-400">ID: ${u.id.substring(0, 8)}...</div>
+                                        <div class="text-[9px] text-sky-400 font-mono">ID: ${u.id.substring(0, 8)}...</div>
                                     </div>
                                 </div>
                                 <span class="font-black text-amber-400">🪙 ${u.coins || 0}</span>
@@ -713,7 +790,7 @@
                     const isApproved = ['approved', 'done'].includes((req.status || '').toLowerCase());
                     const cleanLoaderName = sanitizeTitle(req.loader);
                     
-                    item.className = "bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs";
+                    item.className = "bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs";
                     item.innerHTML = `
                         <div>
                             <div class="font-bold text-slate-200">${cleanLoaderName} (${req.duration})</div>
@@ -733,8 +810,8 @@
                 } catch(e){}
 
                 tasks = tasks || {
-                    "task_1": { title: "Join Community Telegram Channel", reward: 50, link: "https://t.me", icon: "📢" },
-                    "task_2": { title: "Follow Galaxy News Channel", reward: 35, link: "https://t.me", icon: "⭐" }
+                    "task_1": { title: "Join BGMI Community Telegram Channel", reward: 50, link: "https://t.me", icon: "📢" },
+                    "task_2": { title: "Follow Winter Event Updates", reward: 35, link: "https://t.me", icon: "❄️" }
                 };
 
                 const container = document.getElementById('ui-tasks-list');
@@ -745,10 +822,10 @@
                     const t = tasks[id];
                     const isCompleted = AppState.user.completedTasks[id] === true;
                     const coinReward = t.reward || t.coins || 50;
-                    const icon = t.icon || "📺";
+                    const icon = t.icon || "❄️";
 
                     const div = document.createElement('div');
-                    div.className = "bg-slate-900 border border-slate-800 p-3 rounded-2xl flex justify-between items-center";
+                    div.className = "bg-slate-950/90 border border-slate-800 p-3 rounded-2xl flex justify-between items-center";
                     div.innerHTML = `
                         <div class="flex items-center space-x-3">
                             <span class="text-lg">${icon}</span>
@@ -758,7 +835,7 @@
                             </div>
                         </div>
                         <button onclick="window.completeTask('${id}', ${coinReward}, '${t.link || '#'}')" 
-                            class="${isCompleted ? 'bg-slate-800 text-slate-500' : 'bg-blue-600 hover:bg-blue-500 text-white'} text-[11px] font-bold px-3 py-1.5 rounded-xl transition"
+                            class="${isCompleted ? 'bg-slate-900 text-slate-600' : 'ice-button text-slate-950 font-black'} text-[11px] px-3.5 py-1.5 rounded-xl transition"
                             ${isCompleted ? 'disabled' : ''}>
                             ${isCompleted ? 'Completed ✓' : 'Start'}
                         </button>
