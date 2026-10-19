@@ -24,13 +24,6 @@
         .glow-card {
             box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.25);
         }
-        .planet-glow {
-            box-shadow: 0 0 60px 15px rgba(99, 102, 241, 0.4);
-        }
-        .planet-press {
-            transform: scale(0.93);
-            transition: transform 0.05s ease;
-        }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
@@ -104,117 +97,51 @@
     <div class="px-4 pt-3">
         <div class="bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/20 px-3.5 py-2 rounded-2xl flex items-center space-x-2 text-[11px] text-slate-300">
             <span class="text-xs animate-bounce">📢</span>
-            <marquee class="font-medium text-slate-300">🎮 Tap Galaxy Orb, Upgrade Boosters, Spin 3-Hour Lucky Wheel & redeem VIP Game Access Vouchers!</marquee>
+            <marquee class="font-medium text-slate-300">🎬 Watch Sponsored Ads to earn instant coins & redeem VIP Game Access Vouchers!</marquee>
         </div>
     </div>
 
     <!-- MAIN VIEWS CONTAINER -->
     <main class="p-4 max-w-md mx-auto space-y-4">
 
-        <!-- SCREEN 1: TAP GAME ZONE -->
+        <!-- SCREEN 1: TAP GAME ZONE (DISABLED / UNDER DEVELOPMENT) -->
         <section id="view-game" class="view-screen active space-y-4">
-            
-            <!-- GAME STATS BANNER -->
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 rounded-3xl border border-indigo-500/30 flex justify-between items-center glow-card">
+            <div class="bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-900 border border-indigo-500/30 p-8 rounded-3xl text-center space-y-4 glow-card my-8">
+                <div class="w-20 h-20 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-indigo-500/10 animate-pulse">
+                    🚀
+                </div>
                 <div>
-                    <div class="text-[10px] uppercase font-bold text-indigo-400">Interactive Mode</div>
-                    <div class="text-sm font-black text-white" id="ui-tap-power">Live Tap Feedback</div>
+                    <h2 class="text-lg font-black text-white">Galaxy Tap Game Under Maintenance</h2>
+                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                        Tap Orb and Upgrades are currently under development for major upgrades.
+                    </p>
                 </div>
-                <div class="text-center">
-                    <div class="text-[10px] uppercase font-bold text-purple-400">Level Rank</div>
-                    <div class="text-xs font-black text-purple-200" id="ui-level-badge">Lvl 1 Explorer</div>
+                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-2xl">
+                    <span class="text-xs font-bold text-amber-400">💡 Tip: You can still earn coins by watching Sponsored Ads in the "Earn Extra" section!</span>
                 </div>
-                <div class="text-right">
-                    <div class="text-[10px] uppercase font-bold text-emerald-400">Total Taps</div>
-                    <div class="text-sm font-black text-white" id="ui-total-taps">0</div>
-                </div>
+                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition uppercase tracking-wider">
+                    🎬 Go to Ads & Earn Coins
+                </button>
             </div>
-
-            <!-- LEVEL PROGRESS BAR -->
-            <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl space-y-1.5">
-                <div class="flex justify-between items-center text-[11px] font-bold">
-                    <span class="text-slate-400">Level Progress</span>
-                    <span id="ui-level-progress-text" class="text-indigo-400">0 / 500 Taps</span>
-                </div>
-                <div class="w-full bg-slate-950 rounded-full h-2 border border-slate-800 overflow-hidden">
-                    <div id="ui-level-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <!-- INTERACTIVE PLANET TAPPER AREA -->
-            <div class="relative py-4 flex flex-col items-center justify-center overflow-hidden">
-                <div id="planet-target" class="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-500 planet-glow flex items-center justify-center cursor-pointer select-none active:planet-press relative transition-transform">
-                    <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-slate-950/40 backdrop-blur-sm border border-white/20 flex flex-col items-center justify-center text-center p-2">
-                        <span class="text-5xl sm:text-6xl mb-1">🪐</span>
-                        <span class="text-[10px] font-black uppercase text-blue-200 tracking-wider">TAP ORB ANIMATION</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ENERGY BAR -->
-            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-2">
-                <div class="flex justify-between items-center text-xs font-bold">
-                    <span class="text-slate-300 flex items-center space-x-1">
-                        <span>⚡</span> <span>Galaxy Energy</span>
-                    </span>
-                    <span id="ui-energy-text" class="text-amber-400">500 / 500</span>
-                </div>
-                <div class="w-full bg-slate-950 rounded-full h-3 border border-slate-800 overflow-hidden">
-                    <div id="ui-energy-bar" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-3 rounded-full transition-all duration-300" style="width: 100%"></div>
-                </div>
-                <div class="flex justify-between text-[10px] text-slate-500">
-                    <span>⚡ Interactive Orb Animation Active</span>
-                    <span>⏳ 12-Hour Server Refill Cycle</span>
-                </div>
-            </div>
-
-            <!-- IN-GAME UPGRADES SHOP -->
-            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-3">
-                <h3 class="text-xs font-bold text-slate-200 flex items-center space-x-1.5">
-                    <span>🚀</span> <span>Power-Up Boosters</span>
-                </h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="btn-upgrade-multitap" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between">
-                        <div>
-                            <div class="text-[11px] font-bold text-slate-200">Orb Boost</div>
-                            <div class="text-[9px] text-slate-400">Enhance tap effects</div>
-                        </div>
-                        <div class="mt-2 text-xs font-black text-amber-400" id="ui-multitap-cost">🪙 100 Coins</div>
-                    </button>
-                    <button id="btn-upgrade-autodrone" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between">
-                        <div>
-                            <div class="text-[11px] font-bold text-slate-200">Miner Drone</div>
-                            <div class="text-[9px] text-slate-400">+1 Coin / 10 sec</div>
-                        </div>
-                        <div class="mt-2 text-xs font-black text-amber-400" id="ui-autodrone-cost">🪙 250 Coins</div>
-                    </button>
-                </div>
-            </div>
-
         </section>
 
-        <!-- SCREEN 2: SPIN WHEEL MINIGAME -->
+        <!-- SCREEN 2: SPIN WHEEL MINIGAME (DISABLED / UNDER DEVELOPMENT) -->
         <section id="view-wheel" class="view-screen space-y-4">
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-center space-y-1">
-                <h2 class="text-sm font-bold text-slate-100 flex items-center justify-center space-x-1.5">
-                    <span>🎡</span> <span>Lucky Galaxy Spin</span>
-                </h2>
-                <p class="text-xs text-slate-400">Spin available once every 3 hours for bonus coins!</p>
-            </div>
-
-            <!-- CANVAS SPIN WHEEL -->
-            <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl flex flex-col items-center justify-center space-y-4 glow-card">
-                <div class="relative flex items-center justify-center">
-                    <div class="absolute -top-3 z-20 text-2xl text-amber-400 drop-shadow-md">▼</div>
-                    <canvas id="wheel-canvas" width="280" height="280" class="rounded-full border-4 border-indigo-600 shadow-2xl"></canvas>
+            <div class="bg-gradient-to-br from-purple-950/80 via-slate-900 to-slate-900 border border-purple-500/30 p-8 rounded-3xl text-center space-y-4 glow-card my-8">
+                <div class="w-20 h-20 bg-purple-500/10 border border-purple-500/20 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-purple-500/10 animate-bounce">
+                    🎡
                 </div>
-
-                <div id="ui-spin-timer" class="text-xs font-bold text-amber-400 hidden bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
-                    ⏱️ Next Spin Available in: <span id="spin-countdown">03h 00m 00s</span>
+                <div>
+                    <h2 class="text-lg font-black text-white">Spin Wheel Under Maintenance</h2>
+                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                        Lucky Wheel feature is currently undergoing maintenance and will return soon with bigger rewards!
+                    </p>
                 </div>
-
-                <button id="btn-spin-wheel" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:opacity-50 text-slate-950 font-black text-xs py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition uppercase tracking-wider">
-                    🎡 Spin Lucky Wheel
+                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-2xl">
+                    <span class="text-xs font-bold text-emerald-400">⚡ Check back soon for exciting rewards!</span>
+                </div>
+                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-purple-600/30 transition uppercase tracking-wider">
+                    💰 Earn Coins via Ads
                 </button>
             </div>
         </section>
@@ -279,8 +206,22 @@
             </div>
         </section>
 
-        <!-- SCREEN 5: EARN EXTRA COINS -->
+        <!-- SCREEN 5: EARN EXTRA COINS (PRIMARY EARNING ZONE) -->
         <section id="view-earn" class="view-screen space-y-4">
+            <!-- SPONSORED REWARD VIDEO (PRIMARY) -->
+            <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 border border-indigo-500/30 p-4 rounded-2xl space-y-3 text-center glow-card">
+                <div class="w-10 h-10 bg-indigo-500/10 rounded-xl border border-indigo-500/20 flex items-center justify-center mx-auto text-xl">
+                    🎬
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-slate-100">Sponsored High Reward Video</h3>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Watch short ads to receive bonus coins instantly.</p>
+                </div>
+                <button id="btn-watch-ad" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition">
+                    Watch Video (+25 Coins) [0/15 Today]
+                </button>
+            </div>
+
             <!-- DAILY CHECK-IN -->
             <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
                 <div class="flex justify-between items-center">
@@ -294,30 +235,16 @@
                 </button>
             </div>
 
-            <!-- SPONSORED REWARD VIDEO -->
-            <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 border border-indigo-500/30 p-4 rounded-2xl space-y-3 text-center glow-card">
-                <div class="w-10 h-10 bg-indigo-500/10 rounded-xl border border-indigo-500/20 flex items-center justify-center mx-auto text-xl">
-                    🎬
-                </div>
-                <div>
-                    <h3 class="text-xs font-bold text-slate-100">Sponsored High Reward Video</h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Watch 2 short ads to receive +25 bonus coins instantly.</p>
-                </div>
-                <button id="btn-watch-ad" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition">
-                    Watch Video (+25 Coins) [0/15 Today]
-                </button>
-            </div>
-
-            <!-- AUTO MINING VAULT -->
-            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-2">
+            <!-- PASSIVE MINING (DISABLED / UNDER DEVELOPMENT) -->
+            <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl space-y-2 opacity-75 relative overflow-hidden">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-slate-200 flex items-center space-x-1">
-                        <span>⚡</span> <span>Passive Coin Mining</span>
+                    <span class="text-xs font-bold text-slate-400 flex items-center space-x-1">
+                        <span>⚡</span> <span>Passive Mining Vault</span>
                     </span>
-                    <span id="ui-mined-display" class="text-xs font-bold text-amber-400">🪙 0.00 / 50</span>
+                    <span class="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold px-2 py-0.5 rounded-full">UNDER DEVELOPMENT</span>
                 </div>
-                <button id="btn-claim-mining" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl transition shadow-md shadow-emerald-600/20">
-                    Claim Mined Balance 🪙
+                <button onclick="window.showToast('Mining Vault is undergoing maintenance!', '🛠️')" class="w-full bg-slate-800 text-slate-500 font-bold text-xs py-3 rounded-xl transition cursor-not-allowed">
+                    Mining Locked 🔒
                 </button>
             </div>
 
@@ -335,13 +262,17 @@
     <!-- BOTTOM NAVIGATION BAR -->
     <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/90 py-2.5 px-2 z-50">
         <div class="max-w-md mx-auto flex justify-around items-center">
-            <button onclick="window.UIController.navigateTo('view-game')" id="nav-btn-game" class="nav-item flex flex-col items-center space-y-1 text-blue-500 font-bold text-[10px]">
+            <button onclick="window.UIController.navigateTo('view-game')" id="nav-btn-game" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
                 <span class="text-base">🎮</span>
                 <span>Play Game</span>
             </button>
             <button onclick="window.UIController.navigateTo('view-wheel')" id="nav-btn-wheel" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
                 <span class="text-base">🎡</span>
                 <span>Spin Wheel</span>
+            </button>
+            <button onclick="window.UIController.navigateTo('view-earn')" id="nav-btn-earn" class="nav-item flex flex-col items-center space-y-1 text-blue-500 font-bold text-[10px]">
+                <span class="text-base">💰</span>
+                <span>Earn Extra</span>
             </button>
             <button onclick="window.UIController.navigateTo('view-keys')" id="nav-btn-keys" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
                 <span class="text-base">🎫</span>
@@ -350,10 +281,6 @@
             <button onclick="window.UIController.navigateTo('view-ranks')" id="nav-btn-ranks" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
                 <span class="text-base">🏆</span>
                 <span>Ranks</span>
-            </button>
-            <button onclick="window.UIController.navigateTo('view-earn')" id="nav-btn-earn" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
-                <span class="text-base">💰</span>
-                <span>Earn Extra</span>
             </button>
         </div>
     </nav>
@@ -382,9 +309,6 @@
             initDataUnsafe: {}
         };
         try { if (tg.expand) tg.expand(); } catch(e){}
-
-        const MAX_ENERGY = 500;
-        const SPIN_3_HOURS_MS = 3 * 60 * 60 * 1000;
 
         let tapCountAdmin = 0;
 
@@ -416,21 +340,6 @@
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                 }
-            },
-            playTap() {
-                try {
-                    this.init();
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(400 + Math.random() * 150, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.08);
-                } catch (e) {}
             },
             playWin() {
                 try {
@@ -486,24 +395,16 @@
 
         const AppState = {
             watchAdsConfig: { daily_limit: 15, reward: 25 },
-            miningConfig: { daily_limit: 50 },
             user: {
                 id: "test_user_androidide",
                 name: "Gamer",
                 coins: 0,
-                minedCoins: 0.0,
-                lastMiningTime: Date.now(),
                 streak: 0,
                 lastCheckInDate: "",
                 completedTasks: {},
                 watchedAds: 0,
                 lastAdResetDate: "",
-                energy: MAX_ENERGY,
-                lastEnergyUpdate: Date.now(),
-                totalTaps: 0,
-                lastSpinTime: 0,
-                hasDrone: false,
-                keyRequests: { sent: 0, approved: 0, rejected: 0 } // Track user key requests stats
+                keyRequests: { sent: 0, approved: 0, rejected: 0 }
             },
             loaders: {}
         };
@@ -516,14 +417,6 @@
         function sanitizeTitle(str) {
             if (!str) return "VIP Game Pass";
             return str.replace(/cheat|hack|loader|mod|spoofer/gi, "VIP Pass");
-        }
-
-        function getLevelInfo(totalTaps) {
-            if (totalTaps >= 10000) return { title: "Cosmic Legend", level: 5, target: 10000 };
-            if (totalTaps >= 5000) return { title: "Quantum Master", level: 4, target: 10000 };
-            if (totalTaps >= 2000) return { title: "Galactic Pioneer", level: 3, target: 5000 };
-            if (totalTaps >= 500) return { title: "Starlight Miner", level: 2, target: 2000 };
-            return { title: "Explorer", level: 1, target: 500 };
         }
 
         window.UIController = {
@@ -552,7 +445,6 @@
 
                 if (screenId === 'view-keys') FirebaseService.fetchLoadersAndHistory();
                 if (screenId === 'view-earn') FirebaseService.fetchTasks();
-                if (screenId === 'view-wheel') WheelGame.updateWheelView();
             },
 
             updateHeader() {
@@ -560,255 +452,16 @@
                 const balEl = document.getElementById('ui-balance');
                 if (nameEl) nameEl.innerText = `Hello, ${AppState.user.name} 👋`;
                 if (balEl) balEl.innerText = Math.floor(AppState.user.coins);
-                
-                FirebaseService.calculateMinedCoins();
-                
-                const lvl = getLevelInfo(AppState.user.totalTaps);
-                const rankLbl = document.getElementById('ui-rank-label');
-                const lvlBadge = document.getElementById('ui-level-badge');
-                
-                if (rankLbl) rankLbl.innerText = `Rank: ${lvl.title} (Lvl ${lvl.level})`;
-                if (lvlBadge) lvlBadge.innerText = `Lvl ${lvl.level} ${lvl.title}`;
-
-                const pct = Math.min(100, Math.floor((AppState.user.totalTaps / lvl.target) * 100));
-                const lvlBar = document.getElementById('ui-level-bar');
-                const lvlText = document.getElementById('ui-level-progress-text');
-                
-                if (lvlBar) lvlBar.style.width = `${pct}%`;
-                if (lvlText) lvlText.innerText = `${AppState.user.totalTaps} / ${lvl.target} Interactions`;
 
                 const streakEl = document.getElementById('ui-streak-count');
-                const tapsEl = document.getElementById('ui-total-taps');
                 if (streakEl) streakEl.innerText = `Streak: ${AppState.user.streak} Days`;
-                if (tapsEl) tapsEl.innerText = AppState.user.totalTaps;
 
                 const today = new Date().toISOString().split('T')[0];
                 const watched = (AppState.user.lastAdResetDate === today) ? AppState.user.watchedAds : 0;
                 const adBtn = document.getElementById('btn-watch-ad');
                 if (adBtn) adBtn.innerText = `Watch Video (+${AppState.watchAdsConfig.reward} Coins) [${watched}/${AppState.watchAdsConfig.daily_limit} Today]`;
-
-                const droneEl = document.getElementById('ui-autodrone-cost');
-                if (droneEl) {
-                    if (AppState.user.hasDrone) {
-                        droneEl.innerText = `✅ Active`;
-                    } else {
-                        droneEl.innerText = `🪙 250 Coins`;
-                    }
-                }
             }
         };
-
-        const TapGame = {
-            init() {
-                const target = document.getElementById('planet-target');
-                if (!target) return;
-
-                target.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    for(let i = 0; i < e.touches.length; i++) {
-                        this.handleTap(e.touches[i].clientX, e.touches[i].clientY);
-                    }
-                });
-                target.addEventListener('click', (e) => {
-                    this.handleTap(e.clientX, e.clientY);
-                });
-
-                setInterval(() => {
-                    if (AppState.user.hasDrone) {
-                        AppState.user.coins += 1;
-                        window.UIController.updateHeader();
-                    }
-                }, 10000);
-            },
-
-            handleTap(x, y) {
-                SoundSystem.playTap();
-                AppState.user.totalTaps += 1;
-                window.UIController.updateHeader();
-
-                try {
-                    if (tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
-                        tg.HapticFeedback.impactOccurred('light');
-                    }
-                } catch(e){}
-
-                const target = document.getElementById('planet-target');
-                if (target) {
-                    target.classList.add('planet-press');
-                    setTimeout(() => target.classList.remove('planet-press'), 100);
-
-                    const rect = target.getBoundingClientRect();
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'absolute text-sm font-black text-blue-300 pointer-events-none animate-ping';
-                    sparkle.style.left = `${Math.max(10, Math.min(rect.width - 20, x - rect.left))}px`;
-                    sparkle.style.top = `${Math.max(10, Math.min(rect.height - 20, y - rect.top))}px`;
-                    sparkle.innerHTML = '✨';
-                    target.appendChild(sparkle);
-                    setTimeout(() => sparkle.remove(), 600);
-                }
-
-                setTimeout(() => {
-                    FirebaseService.syncUserData();
-                }, 1000);
-            }
-        };
-
-        const WheelGame = {
-            slices: ["🪙 2", "🪙 5", "🪙 1", "🪙 10", "🪙 3", "🪙 15", "🪙 5", "🪙 20"],
-            rewardValues: [2, 5, 1, 10, 3, 15, 5, 20],
-            colors: ["#3b82f6", "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#f43f5e"],
-            angle: 0,
-            isSpinning: false,
-
-            drawWheel() {
-                const canvas = document.getElementById('wheel-canvas');
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                const numSlices = this.slices.length;
-                const sliceAngle = (2 * Math.PI) / numSlices;
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                for (let i = 0; i < numSlices; i++) {
-                    ctx.beginPath();
-                    ctx.fillStyle = this.colors[i];
-                    ctx.moveTo(140, 140);
-                    ctx.arc(140, 140, 135, this.angle + i * sliceAngle, this.angle + (i + 1) * sliceAngle);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.save();
-                    ctx.translate(140, 140);
-                    ctx.rotate(this.angle + (i + 0.5) * sliceAngle);
-                    ctx.textAlign = "right";
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.fillText(this.slices[i], 120, 5);
-                    ctx.restore();
-                }
-            },
-
-            updateWheelView() {
-                this.drawWheel();
-                this.checkCooldown();
-            },
-
-            checkCooldown() {
-                const now = Date.now();
-                const lastSpin = AppState.user.lastSpinTime || 0;
-                const elapsed = now - lastSpin;
-
-                const spinBtn = document.getElementById('btn-spin-wheel');
-                const timerContainer = document.getElementById('ui-spin-timer');
-                const countdownText = document.getElementById('spin-countdown');
-
-                if (!spinBtn) return;
-
-                if (elapsed < SPIN_3_HOURS_MS) {
-                    const remainingMs = SPIN_3_HOURS_MS - elapsed;
-                    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
-                    const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-                    const secs = Math.floor((remainingMs % (1000 * 60)) / 1000);
-
-                    spinBtn.disabled = true;
-                    spinBtn.innerText = "🔒 Cooldown Active";
-                    if (timerContainer) timerContainer.classList.remove('hidden');
-                    if (countdownText) countdownText.innerText = `${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
-                } else {
-                    spinBtn.disabled = false;
-                    spinBtn.innerText = "🎡 Spin Lucky Wheel (Free)";
-                    if (timerContainer) timerContainer.classList.add('hidden');
-                }
-            },
-
-            spin() {
-                if (this.isSpinning) return;
-                
-                const now = Date.now();
-                const lastSpin = AppState.user.lastSpinTime || 0;
-                if (now - lastSpin < SPIN_3_HOURS_MS) {
-                    window.showToast("Wheel is in cooldown! Check back when timer finishes.", "⏱");
-                    return;
-                }
-
-                this.isSpinning = true;
-
-                const numSlices = this.slices.length;
-                const sliceAngle = (2 * Math.PI) / numSlices;
-                
-                const prizeIndex = Math.floor(Math.random() * numSlices);
-                const prizeCoins = this.rewardValues[prizeIndex];
-
-                const extraSpins = 5 * 2 * Math.PI; 
-                const targetSliceCenterAngle = -Math.PI / 2;
-                const currentNormalizedAngle = this.angle % (2 * Math.PI);
-                const neededOffset = targetSliceCenterAngle - (currentNormalizedAngle + (prizeIndex + 0.5) * sliceAngle);
-                
-                const finalTargetAngle = this.angle + extraSpins + ((neededOffset % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
-
-                let start = null;
-                const duration = 4000;
-
-                const animate = (timestamp) => {
-                    if (!start) start = timestamp;
-                    const elapsed = timestamp - start;
-                    const progress = Math.min(1, elapsed / duration);
-                    
-                    const easeOut = 1 - Math.pow(1 - progress, 3);
-                    const currentAngle = this.angle + (finalTargetAngle - this.angle) * easeOut;
-                    this.angle = currentAngle;
-
-                    this.drawWheel();
-
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        this.angle = finalTargetAngle;
-                        this.drawWheel();
-                        this.isSpinning = false;
-                        
-                        AppState.user.lastSpinTime = Date.now();
-                        AppState.user.coins += prizeCoins;
-                        
-                        SoundSystem.playWin();
-                        FirebaseService.syncUserData();
-                        this.checkCooldown();
-                        window.showToast(`🎉 Won ${prizeCoins} Coins from Lucky Wheel!`, "🎉");
-                    }
-                };
-
-                requestAnimationFrame(animate);
-            }
-        };
-
-        setInterval(() => {
-            const wheelScreen = document.getElementById('view-wheel');
-            if (wheelScreen && wheelScreen.classList.contains('active')) {
-                WheelGame.checkCooldown();
-            }
-        }, 1000);
-
-        const btnSpin = document.getElementById('btn-spin-wheel');
-        if (btnSpin) btnSpin.addEventListener('click', () => WheelGame.spin());
-
-        const btnDrone = document.getElementById('btn-upgrade-autodrone');
-        if (btnDrone) {
-            btnDrone.addEventListener('click', () => {
-                if (AppState.user.hasDrone) {
-                    window.showToast("Miner Drone is already active!", "ℹ️");
-                    return;
-                }
-                if (AppState.user.coins >= 250) {
-                    AppState.user.coins -= 250;
-                    AppState.user.hasDrone = true;
-                    SoundSystem.playWin();
-                    FirebaseService.syncUserData();
-                    window.showToast("🚀 Miner Drone Activated! Mines 1 coin / 10s!", "🚀");
-                } else {
-                    window.showToast("Insufficient balance! Need 250 Coins.", "❌");
-                }
-            });
-        }
 
         const FirebaseService = {
             userRef: ref(db, 'users/' + AppState.user.id),
@@ -821,12 +474,6 @@
                         AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit || 15);
                         AppState.watchAdsConfig.reward = Number(adData.reward || 25);
                     }
-
-                    const mineSnap = await get(ref(db, 'mining_config'));
-                    if (mineSnap.exists()) {
-                        const mineData = mineSnap.val();
-                        AppState.miningConfig.daily_limit = Number(mineData.daily_limit || 50);
-                    }
                 } catch (e) { console.log("Config fallback active."); }
             },
 
@@ -836,19 +483,14 @@
 
                     const snapshot = await get(this.userRef);
                     const data = snapshot.val();
-                    const now = Date.now();
                     const today = new Date().toISOString().split('T')[0];
 
                     if (data) {
                         AppState.user.coins = data.coins || 0;
-                        AppState.user.lastMiningTime = data.last_mining_time || now;
                         AppState.user.streak = data.streak || 0;
                         AppState.user.lastCheckInDate = data.last_date || "";
                         AppState.user.completedTasks = data.completed_tasks || {};
                         AppState.user.lastAdResetDate = data.last_ad_reset_date || "";
-                        AppState.user.totalTaps = data.total_taps || 0;
-                        AppState.user.lastSpinTime = data.last_spin_time || 0;
-                        AppState.user.hasDrone = data.has_drone || false;
                         AppState.user.keyRequests = data.keyRequests || { sent: 0, approved: 0, rejected: 0 };
 
                         if (AppState.user.lastAdResetDate !== "" && AppState.user.lastAdResetDate !== today) {
@@ -862,7 +504,6 @@
                         AppState.user.coins = 50;
                         AppState.user.lastAdResetDate = today;
                         AppState.user.watchedAds = 0;
-                        AppState.user.lastMiningTime = now;
                         AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
                     }
                 } catch(e) {
@@ -876,8 +517,9 @@
                 this.listenMaintenanceMode();
                 this.listenBanStatus();
                 this.fetchLeaderboard();
-                this.startMiningTimer();
-                TapGame.init();
+                
+                // Set default active tab to 'view-earn' (Ads screen)
+                window.UIController.navigateTo('view-earn');
             },
 
             listenMaintenanceMode() {
@@ -958,33 +600,17 @@
                 } catch(e){}
             },
 
-            calculateMinedCoins() {
-                const now = Date.now();
-                const elapsedMs = Math.max(0, now - AppState.user.lastMiningTime);
-                const max24hMs = 24 * 60 * 60 * 1000;
-                
-                const accumulated = (elapsedMs / max24hMs) * AppState.miningConfig.daily_limit;
-                AppState.user.minedCoins = Math.min(AppState.miningConfig.daily_limit, accumulated);
-
-                const minedEl = document.getElementById('ui-mined-display');
-                if (minedEl) minedEl.innerText = `🪙 ${AppState.user.minedCoins.toFixed(2)} / ${AppState.miningConfig.daily_limit}`;
-            },
-
             syncUserData() {
                 try {
                     update(this.userRef, {
                         name: AppState.user.name,
                         coins: AppState.user.coins,
-                        last_mining_time: AppState.user.lastMiningTime,
                         streak: AppState.user.streak,
                         last_date: AppState.user.lastCheckInDate,
                         completed_tasks: AppState.user.completedTasks,
                         watched_ads: AppState.user.watchedAds,
                         last_ad_reset_date: AppState.user.lastAdResetDate,
-                        total_taps: AppState.user.totalTaps,
-                        last_spin_time: AppState.user.lastSpinTime,
-                        has_drone: AppState.user.hasDrone,
-                        keyRequests: AppState.user.keyRequests, // Sync key requests data on server
+                        keyRequests: AppState.user.keyRequests,
                         last_earned: serverTimestamp()
                     });
                 } catch(e){}
@@ -1001,10 +627,6 @@
                         }
                     });
                 } catch(e){}
-            },
-
-            startMiningTimer() {
-                setInterval(() => this.calculateMinedCoins(), 10000);
             },
 
             async fetchLoadersAndHistory() {
@@ -1219,26 +841,6 @@
             });
         }
 
-        const btnClaimMining = document.getElementById('btn-claim-mining');
-        if (btnClaimMining) {
-            btnClaimMining.addEventListener('click', () => {
-                FirebaseService.calculateMinedCoins();
-                const claimableCoins = Math.floor(AppState.user.minedCoins);
-
-                if (claimableCoins < 1) {
-                    window.showToast("Mining in progress! Minimum 1 coin required. ⏳", "⏳");
-                    return;
-                }
-
-                AppState.user.coins += claimableCoins;
-                AppState.user.minedCoins = 0;
-                AppState.user.lastMiningTime = Date.now();
-                SoundSystem.playWin();
-                FirebaseService.syncUserData();
-                window.showToast(`🎉 Claim Successful! +${claimableCoins} Mined Coins added!`, "🎉");
-            });
-        }
-
         const selectLoader = document.getElementById('select-loader');
         if (selectLoader) {
             selectLoader.addEventListener('change', (e) => {
@@ -1284,7 +886,6 @@
 
                 AppState.user.coins -= cost;
                 
-                // Increment sent key request count inside user profile
                 if (!AppState.user.keyRequests) AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
                 AppState.user.keyRequests.sent = (AppState.user.keyRequests.sent || 0) + 1;
                 
