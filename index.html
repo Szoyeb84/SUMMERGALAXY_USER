@@ -277,7 +277,7 @@
                     <p class="text-[11px] text-slate-300 mt-0.5">Watch short ad clips to earn instant coins for BGMI Vouchers.</p>
                 </div>
                 <button id="btn-watch-ad" class="w-full ice-button font-black text-xs py-4 rounded-2xl transition uppercase tracking-wider text-slate-950">
-                    Watch Video (+25 Coins) [0/15 Today]
+                    Watch Video (+10 Coins) [0/15 Today]
                 </button>
             </div>
 
@@ -471,7 +471,7 @@
         };
 
         const AppState = {
-            watchAdsConfig: { daily_limit: 15, reward: 25 },
+            watchAdsConfig: { daily_limit: 15, reward: 10 },
             user: {
                 id: "test_user_androidide",
                 name: "Gamer",
@@ -535,8 +535,13 @@
 
                 const today = new Date().toISOString().split('T')[0];
                 const watched = (AppState.user.lastAdResetDate === today) ? AppState.user.watchedAds : 0;
+                
                 const adBtn = document.getElementById('btn-watch-ad');
-                if (adBtn) adBtn.innerText = `Watch Video (+${AppState.watchAdsConfig.reward} Coins) [${watched}/${AppState.watchAdsConfig.daily_limit} Today]`;
+                if (adBtn) {
+                    const rewardVal = AppState.watchAdsConfig ? AppState.watchAdsConfig.reward : 10;
+                    const limitVal = AppState.watchAdsConfig ? AppState.watchAdsConfig.daily_limit : 15;
+                    adBtn.innerText = `Watch Video (+${rewardVal} Coins) [${watched}/${limitVal} Today]`;
+                }
             }
         };
 
@@ -545,12 +550,13 @@
 
             async fetchConfigs() {
                 try {
-                    // Realtime listener for watch ads config
                     onValue(ref(db, 'watch_ads_config'), (snapshot) => {
                         if (snapshot.exists()) {
                             const adData = snapshot.val();
-                            AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit || 15);
-                            AppState.watchAdsConfig.reward = Number(adData.reward || 25);
+                            AppState.watchAdsConfig = {
+                                daily_limit: Number(adData.daily_limit || 15),
+                                reward: Number(adData.reward || 10)
+                            };
                             window.UIController.updateHeader();
                         }
                     });
