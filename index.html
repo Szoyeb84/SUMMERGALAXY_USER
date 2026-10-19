@@ -161,7 +161,7 @@
     <main class="p-4 max-w-md mx-auto space-y-4 relative z-10">
 
         <!-- SCREEN 1: TAP GAME ZONE (UNDER DEVELOPMENT) -->
-        <section id="view-game" class="view-screen active space-y-4">
+        <section id="view-game" class="view-screen space-y-4">
             <div class="ice-card ice-card-glow p-8 rounded-3xl text-center space-y-5 my-6">
                 <div class="w-20 h-20 bg-sky-500/10 border border-sky-400/30 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-xl shadow-sky-500/20 animate-pulse">
                     🏔️
@@ -265,7 +265,7 @@
         </section>
 
         <!-- SCREEN 5: EARN EXTRA COINS (PRIMARY EARNING ZONE) -->
-        <section id="view-earn" class="view-screen space-y-4">
+        <section id="view-earn" class="view-screen active space-y-4">
             <!-- SPONSORED REWARD VIDEO (PRIMARY) -->
             <div class="ice-card ice-card-glow p-6 rounded-3xl space-y-4 text-center">
                 <div class="w-14 h-14 bg-sky-500/10 rounded-2xl border border-sky-400/30 flex items-center justify-center mx-auto text-3xl shadow-inner">
@@ -545,12 +545,15 @@
 
             async fetchConfigs() {
                 try {
-                    const adSnap = await get(ref(db, 'watch_ads_config'));
-                    if (adSnap.exists()) {
-                        const adData = adSnap.val();
-                        AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit || 15);
-                        AppState.watchAdsConfig.reward = Number(adData.reward || 25);
-                    }
+                    // Realtime listener for watch ads config
+                    onValue(ref(db, 'watch_ads_config'), (snapshot) => {
+                        if (snapshot.exists()) {
+                            const adData = snapshot.val();
+                            AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit || 15);
+                            AppState.watchAdsConfig.reward = Number(adData.reward || 25);
+                            window.UIController.updateHeader();
+                        }
+                    });
                 } catch (e) { console.log("Config fallback active."); }
             },
 
