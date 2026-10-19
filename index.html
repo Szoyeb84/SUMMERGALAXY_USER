@@ -538,9 +538,9 @@
                 
                 const adBtn = document.getElementById('btn-watch-ad');
                 if (adBtn) {
-                    const rewardVal = AppState.watchAdsConfig ? AppState.watchAdsConfig.reward : 10;
-                    const limitVal = AppState.watchAdsConfig ? AppState.watchAdsConfig.daily_limit : 15;
-                    adBtn.innerText = `Watch Video (+${rewardVal} Coins) [${watched}/${limitVal} Today]`;
+                    const currentReward = Number(AppState.watchAdsConfig.reward);
+                    const currentLimit = Number(AppState.watchAdsConfig.daily_limit);
+                    adBtn.innerText = `Watch Video (+${currentReward} Coins) [${watched}/${currentLimit} Today]`;
                 }
             }
         };
@@ -550,17 +550,29 @@
 
             async fetchConfigs() {
                 try {
+                    // 1. Direct fetch immediately on startup
+                    const snap = await get(ref(db, 'watch_ads_config'));
+                    if (snap.exists()) {
+                        const adData = snap.val();
+                        if (adData.reward !== undefined) AppState.watchAdsConfig.reward = Number(adData.reward);
+                        if (adData.daily_limit !== undefined) AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit);
+                        window.UIController.updateHeader();
+                    }
+
+                    // 2. Realtime listener for live updates
                     onValue(ref(db, 'watch_ads_config'), (snapshot) => {
                         if (snapshot.exists()) {
                             const adData = snapshot.val();
-                            AppState.watchAdsConfig = {
-                                daily_limit: Number(adData.daily_limit || 15),
-                                reward: Number(adData.reward || 10)
-                            };
+                            if (adData.reward !== undefined) {
+                                AppState.watchAdsConfig.reward = Number(adData.reward);
+                            }
+                            if (adData.daily_limit !== undefined) {
+                                AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit);
+                            }
                             window.UIController.updateHeader();
                         }
                     });
-                } catch (e) { console.log("Config fallback active."); }
+                } catch (e) { console.log("Config fallback active:", e); }
             },
 
             async initUserSession() {
@@ -604,7 +616,6 @@
                 this.listenBanStatus();
                 this.fetchLeaderboard();
                 
-                // Set default active tab to 'view-earn' (Ads screen)
                 window.UIController.navigateTo('view-earn');
             },
 
