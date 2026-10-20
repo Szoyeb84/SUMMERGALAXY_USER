@@ -114,7 +114,7 @@
     <!-- 🛠️ MAINTENANCE OVERLAY SCREEN -->
     <div id="view-maintenance" class="fixed inset-0 bg-slate-950/98 backdrop-blur-2xl z-[100] hidden flex-col items-center justify-center p-6 text-center space-y-4">
         <div onclick="checkAdminTap()" class="w-20 h-20 bg-sky-500/10 border border-sky-500/30 rounded-3xl flex items-center justify-center text-4xl animate-bounce shadow-lg shadow-sky-500/20 cursor-pointer select-none">
-            🧊
+            Glacier
         </div>
         <h2 class="text-2xl font-black text-sky-300 uppercase tracking-wider heading-font">Winter Festival Server Maintenance</h2>
         <p class="text-xs text-slate-400 max-w-xs leading-relaxed">
@@ -373,7 +373,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, get, set, update, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, get, set, update, onValue, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCJi4iRuuvFtnZdl6q9Z36Ia8VMYH5PW3k",
@@ -590,6 +590,41 @@
             }
         };
 
+        // AUTO CLAIM PENDING REFERRAL REWARDS FOR CURRENT LOGGED IN USER
+        function processPendingReferralClaims() {
+            const myId = AppState.user.id;
+            const claimsRef = ref(db, `referral_claims/${myId}`);
+            
+            onValue(claimsRef, async (snapshot) => {
+                if (snapshot.exists()) {
+                    const claims = snapshot.val();
+                    let bonusCoinsToAdd = 0;
+                    let freeKeysToAdd = 0;
+                    let refsToAdd = 0;
+
+                    for (const claimId in claims) {
+                        const claim = claims[claimId];
+                        bonusCoinsToAdd += Number(claim.bonus_coins || 100);
+                        freeKeysToAdd += Number(claim.free_keys || 1);
+                        refsToAdd += 1;
+                    }
+
+                    if (refsToAdd > 0) {
+                        AppState.user.coins = (AppState.user.coins || 0) + bonusCoinsToAdd;
+                        AppState.user.total_referrals = (AppState.user.total_referrals || 0) + refsToAdd;
+                        AppState.user.referral_earnings = (AppState.user.referral_earnings || 0) + bonusCoinsToAdd;
+                        AppState.user.free_key_credits = (AppState.user.free_key_credits || 0) + freeKeysToAdd;
+
+                        await FirebaseService.syncUserData();
+                        await remove(claimsRef);
+
+                        SoundSystem.playWin();
+                        window.showToast(`🎉 +${bonusCoinsToAdd} Coins & +${freeKeysToAdd} Free Key Credited from Referral!`, "🎉");
+                    }
+                }
+            });
+        }
+
         function initReferralSystem() {
             const botUsername = "SUMMERGALAXYBOT"; 
             const myId = AppState.user.id;
@@ -610,7 +645,7 @@
             }
 
             if (startParam && startParam.startsWith('ref_')) {
-                const referrerId = startParam.replace('ref_', '');
+                const referrerId = startParam.replace('ref_', '').trim();
                 if (referrerId && referrerId !== myId) {
                     const referredRef = ref(db, `users/${myId}/referred_by`);
                     get(referredRef).then(async (snap) => {
@@ -620,37 +655,22 @@
                             const joiningBonus = Number(AppState.referralConfig.joining_bonus || 100);
                             const freeKeysBonus = Number(AppState.referralConfig.free_keys_per_ref || 1);
                             
+                            // Give Joining Bonus to New User
                             AppState.user.coins = (AppState.user.coins || 0) + joiningBonus;
                             await update(ref(db, `users/${myId}`), { 
                                 coins: AppState.user.coins,
                                 referred_by: referrerId 
                             });
 
-                            const referrerRef = ref(db, `users/${referrerId}`);
-                            const refSnap = await get(referrerRef);
-                            if (refSnap.exists()) {
-                                const refData = refSnap.val();
-                                const newCoins = (refData.coins || 0) + joiningBonus;
-                                const totalRefs = (refData.total_referrals || 0) + 1;
-                                const refEarnings = (refData.referral_earnings || 0) + joiningBonus;
-                                const freeKeys = (refData.free_key_credits || 0) + freeKeysBonus;
-                                
-                                await update(referrerRef, {
-                                    coins: newCoins,
-                                    total_referrals: totalRefs,
-                                    referral_earnings: refEarnings,
-                                    free_key_credits: freeKeys
-                                });
-                            } else {
-                                await set(referrerRef, {
-                                    id: referrerId,
-                                    name: "Inviter",
-                                    coins: joiningBonus,
-                                    total_referrals: 1,
-                                    referral_earnings: joiningBonus,
-                                    free_key_credits: freeKeysBonus
-                                });
-                            }
+                            // Push Claim to Inviter's Queue (Server side safe execution)
+                            const claimRef = push(ref(db, `referral_claims/${referrerId}`));
+                            await set(claimRef, {
+                                new_user: myId,
+                                bonus_coins: joiningBonus,
+                                free_keys: freeKeysBonus,
+                                timestamp: Date.now()
+                            });
+
                             window.showToast(`🎁 Referral active! +${joiningBonus} Coins bonus credited!`, "🎁");
                         }
                     });
@@ -772,6 +792,7 @@
                 this.listenBanStatus();
                 this.fetchLeaderboard();
                 initReferralSystem();
+                processPendingReferralClaims();
                 
                 window.UIController.navigateTo('view-earn');
             },
