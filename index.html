@@ -574,7 +574,6 @@
                     adBtn.innerText = `Watch Video (+${currentReward} Coins) [${watched}/${currentLimit} Today]`;
                 }
 
-                // Update Free Key Credit UI elements in VIP Store
                 const freeKeyBanner = document.getElementById('free-key-banner');
                 const lblFreeCredits = document.getElementById('lbl-free-credits');
                 if (freeKeyBanner && lblFreeCredits) {
@@ -592,58 +591,72 @@
         };
 
         function initReferralSystem() {
-            const botUsername = "SummerGalaxyBot"; // Apne bot ka username yahan daalein
+            const botUsername = "SUMMERGALAXYBOT"; 
             const myId = AppState.user.id;
-            const refLink = `https://t.me/${botUsername}?start=ref_${myId}`;
+            const refLink = `https://t.me/${botUsername}/app?startapp=ref_${myId}`;
             
             const refInput = document.getElementById('ref-link-input');
             if (refInput) refInput.value = refLink;
 
-            // Update referral subtitle dynamically from server config
             const bonusSpan = document.getElementById('txt-dynamic-bonus');
             if (bonusSpan) bonusSpan.innerText = `+${AppState.referralConfig.joining_bonus} Coins`;
 
-            // Handle Telegram start_param referral bonus dynamically
+            let startParam = "";
             if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-                const startParam = tg.initDataUnsafe.start_param;
-                if (startParam.startsWith('ref_')) {
-                    const referrerId = startParam.replace('ref_', '');
-                    if (referrerId && referrerId !== myId) {
-                        const referredRef = ref(db, `users/${myId}/referred_by`);
-                        get(referredRef).then(async (snap) => {
-                            if (!snap.exists()) {
-                                await set(referredRef, referrerId);
+                startParam = tg.initDataUnsafe.start_param;
+            } else {
+                const urlParams = new URLSearchParams(window.location.search);
+                startParam = urlParams.get('tgWebAppStartParam') || urlParams.get('startapp') || urlParams.get('start');
+            }
 
-                                const joiningBonus = Number(AppState.referralConfig.joining_bonus || 100);
+            if (startParam && startParam.startsWith('ref_')) {
+                const referrerId = startParam.replace('ref_', '');
+                if (referrerId && referrerId !== myId) {
+                    const referredRef = ref(db, `users/${myId}/referred_by`);
+                    get(referredRef).then(async (snap) => {
+                        if (!snap.exists()) {
+                            await set(referredRef, referrerId);
+
+                            const joiningBonus = Number(AppState.referralConfig.joining_bonus || 100);
+                            const freeKeysBonus = Number(AppState.referralConfig.free_keys_per_ref || 1);
+                            
+                            AppState.user.coins = (AppState.user.coins || 0) + joiningBonus;
+                            await update(ref(db, `users/${myId}`), { 
+                                coins: AppState.user.coins,
+                                referred_by: referrerId 
+                            });
+
+                            const referrerRef = ref(db, `users/${referrerId}`);
+                            const refSnap = await get(referrerRef);
+                            if (refSnap.exists()) {
+                                const refData = refSnap.val();
+                                const newCoins = (refData.coins || 0) + joiningBonus;
+                                const totalRefs = (refData.total_referrals || 0) + 1;
+                                const refEarnings = (refData.referral_earnings || 0) + joiningBonus;
+                                const freeKeys = (refData.free_key_credits || 0) + freeKeysBonus;
                                 
-                                // Give joining bonus to new user
-                                AppState.user.coins += joiningBonus;
-
-                                // Give reward & free key credit to referrer dynamically from config
-                                const referrerRef = ref(db, `users/${referrerId}`);
-                                const refSnap = await get(referrerRef);
-                                if (refSnap.exists()) {
-                                    const refData = refSnap.val();
-                                    const newCoins = (refData.coins || 0) + joiningBonus;
-                                    const totalRefs = (refData.total_referrals || 0) + 1;
-                                    const refEarnings = (refData.referral_earnings || 0) + joiningBonus;
-                                    const freeKeys = (refData.free_key_credits || 0) + Number(AppState.referralConfig.free_keys_per_ref || 1);
-                                    
-                                    await update(referrerRef, {
-                                        coins: newCoins,
-                                        total_referrals: totalRefs,
-                                        referral_earnings: refEarnings,
-                                        free_key_credits: freeKeys
-                                    });
-                                }
-                                window.showToast(`🎁 Referral active! +${joiningBonus} Coins bonus credited!`, "🎁");
+                                await update(referrerRef, {
+                                    coins: newCoins,
+                                    total_referrals: totalRefs,
+                                    referral_earnings: refEarnings,
+                                    free_key_credits: freeKeys
+                                });
+                            } else {
+                                await set(referrerRef, {
+                                    id: referrerId,
+                                    name: "Inviter",
+                                    coins: joiningBonus,
+                                    total_referrals: 1,
+                                    referral_earnings: joiningBonus,
+                                    free_key_credits: freeKeysBonus
+                                });
                             }
-                        });
-                    }
+                            window.showToast(`🎁 Referral active! +${joiningBonus} Coins bonus credited!`, "🎁");
+                        }
+                    });
                 }
             }
 
-            // Bind current user referral stats
             onValue(ref(db, `users/${myId}`), (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
@@ -672,7 +685,6 @@
 
             async fetchConfigs() {
                 try {
-                    // Fetch Watch Ads Config
                     const snap = await get(ref(db, 'watch_ads_config'));
                     if (snap.exists()) {
                         const adData = snap.val();
@@ -680,7 +692,6 @@
                         if (adData.daily_limit !== undefined) AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit);
                     }
 
-                    // Fetch Referral Config Dynamically from Server
                     const refConfSnap = await get(ref(db, 'referral_config'));
                     if (refConfSnap.exists()) {
                         const rData = refConfSnap.val();
@@ -693,7 +704,6 @@
 
                     window.UIController.updateHeader();
 
-                    // Realtime listeners for server updates
                     onValue(ref(db, 'watch_ads_config'), (snapshot) => {
                         if (snapshot.exists()) {
                             const adData = snapshot.val();
