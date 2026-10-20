@@ -60,7 +60,7 @@
             border-radius: 4px;
         }
 
-        /* DYNAMIC SNOWSTORM particles */
+        /* DYNAMIC SNOWSTORM PARTICLES */
         .snowflake {
             position: fixed;
             top: -10px;
@@ -153,7 +153,7 @@
     <div class="px-4 pt-3 relative z-10">
         <div class="bg-gradient-to-r from-sky-950/80 via-slate-950 to-blue-950/80 border border-sky-500/30 px-3.5 py-2.5 rounded-2xl flex items-center space-x-2.5 text-[11px] text-sky-200 shadow-lg">
             <span class="text-sm animate-bounce">🧊</span>
-            <marquee class="font-bold tracking-wide text-sky-200">❄️ BGMI Winter Festival Edition Live! Watch Sponsored Video Ads to farm Ice Coins & redeem BGMI VIP Passes!</marquee>
+            <marquee class="font-bold tracking-wide text-sky-200">❄️ BGMI Winter Festival Edition Live! Invite Friends to earn Free Key requests & Bonus Coins!</marquee>
         </div>
     </div>
 
@@ -182,25 +182,41 @@
             </div>
         </section>
 
-        <!-- SCREEN 2: SPIN WHEEL MINIGAME (UNDER DEVELOPMENT) -->
-        <section id="view-wheel" class="view-screen space-y-4">
-            <div class="ice-card ice-card-glow p-8 rounded-3xl text-center space-y-5 my-6">
-                <div class="w-20 h-20 bg-indigo-500/10 border border-indigo-400/30 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-xl shadow-indigo-500/20 animate-bounce">
-                    🎡
+        <!-- SCREEN 2: REFER & EARN (DYNAMIC CONFIG) -->
+        <section id="view-refer" class="view-screen space-y-4">
+            <div class="ice-card ice-card-glow p-6 rounded-3xl space-y-4 text-center my-6">
+                <div class="w-16 h-16 bg-cyan-500/10 rounded-2xl border border-cyan-400/30 flex items-center justify-center mx-auto text-3xl shadow-inner animate-bounce">
+                    👥
                 </div>
                 <div>
-                    <span class="bg-indigo-400/10 text-indigo-300 text-[10px] font-black px-3 py-1 rounded-full border border-indigo-400/30 uppercase tracking-widest">WINTER EVENT SPECIAL</span>
-                    <h2 class="text-2xl font-black text-white mt-2 heading-font tracking-wide uppercase">Glacier Lucky Wheel — Under Development 🛠️</h2>
-                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                        The 3-Hour Spin Wheel is getting a complete BGMI Glacier overhaul with instant VIP Key drops! Launching soon. ☃️
-                    </p>
+                    <span class="bg-cyan-500/10 text-cyan-400 text-[9px] font-black px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">VIRAL REWARDS</span>
+                    <h3 class="text-xl font-black text-white mt-1.5 uppercase heading-font">Invite Friends & Win Free Keys</h3>
+                    <p id="ui-refer-subtitle" class="text-[11px] text-slate-300 mt-0.5">Invite friends to earn <span class="text-amber-400 font-bold" id="txt-dynamic-bonus">+100 Coins</span> joining bonus & earn <span class="text-emerald-400 font-bold">Free Key Requests</span>!</p>
                 </div>
-                <div class="bg-slate-950/90 border border-sky-500/20 p-3.5 rounded-2xl">
-                    <span class="text-xs font-black text-sky-300">💡 Stay tuned for the official Winter Festival release!</span>
+
+                <!-- REFERRAL LINK BOX -->
+                <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-2xl space-y-2 text-left">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Your Unique Invite Link</label>
+                    <input type="text" id="ref-link-input" readonly value="Generating link..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-sky-300 font-mono text-center focus:outline-none select-all">
+                    <button onclick="window.copyReferralLink()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black text-xs py-3 rounded-xl transition uppercase tracking-wider">
+                        Copy Invite Link 📋
+                    </button>
                 </div>
-                <button onclick="window.UIController.navigateTo('view-earn')" class="w-full ice-button font-black text-xs py-4 rounded-2xl transition uppercase tracking-wider text-slate-950">
-                    💰 Farm Coins in Earn Section
-                </button>
+
+                <div class="grid grid-cols-3 gap-2 pt-2">
+                    <div class="bg-slate-950/90 border border-slate-800 p-2.5 rounded-2xl text-center">
+                        <span class="text-[9px] text-slate-400 uppercase font-bold block">Invited</span>
+                        <span id="ui-ref-count" class="text-sm font-black text-indigo-400 mt-1 block">0</span>
+                    </div>
+                    <div class="bg-slate-950/90 border border-slate-800 p-2.5 rounded-2xl text-center">
+                        <span class="text-[9px] text-slate-400 uppercase font-bold block">Free Keys</span>
+                        <span id="ui-free-keys" class="text-sm font-black text-emerald-400 mt-1 block">0 🔑</span>
+                    </div>
+                    <div class="bg-slate-950/90 border border-slate-800 p-2.5 rounded-2xl text-center">
+                        <span class="text-[9px] text-slate-400 uppercase font-bold block">Earned</span>
+                        <span id="ui-ref-coins" class="text-sm font-black text-amber-400 mt-1 block">0 🪙</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -210,7 +226,7 @@
                 <h2 class="text-base font-black text-sky-200 flex items-center space-x-2 heading-font tracking-wide uppercase">
                     <span class="text-xl">🎫</span> <span>BGMI Winter VIP Pass Store</span>
                 </h2>
-                <p class="text-xs text-slate-300">Select your BGMI VIP Pass package and duration to redeem your earned Ice Coins.</p>
+                <p class="text-xs text-slate-300">Select your BGMI VIP Pass package or use your earned Free Key credit.</p>
                 
                 <div class="space-y-3 pt-1">
                     <div>
@@ -224,6 +240,17 @@
                         <select id="select-duration" class="w-full bg-slate-950 border border-sky-500/30 rounded-xl p-3.5 text-xs text-slate-200 focus:outline-none focus:border-sky-400 font-bold">
                             <option value="">Select Package First</option>
                         </select>
+                    </div>
+                    <!-- FREE KEY TOGGLE BANNER -->
+                    <div id="free-key-banner" class="bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-xl flex justify-between items-center hidden">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-lg">🔑</span>
+                            <div>
+                                <div class="text-[11px] font-bold text-emerald-300">Use Free Key Credit?</div>
+                                <div class="text-[9px] text-emerald-400">You have <span id="lbl-free-credits">0</span> free key(s) available!</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="use-free-key-check" class="w-4 h-4 accent-emerald-500 cursor-pointer">
                     </div>
                 </div>
 
@@ -325,9 +352,9 @@
                 <span class="text-base">🎮</span>
                 <span>Play Game</span>
             </button>
-            <button onclick="window.UIController.navigateTo('view-wheel')" id="nav-btn-wheel" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
-                <span class="text-base">🎡</span>
-                <span>Spin Wheel</span>
+            <button onclick="window.UIController.navigateTo('view-refer')" id="nav-btn-refer" class="nav-item flex flex-col items-center space-y-1 text-slate-500 font-bold text-[10px]">
+                <span class="text-base">👥</span>
+                <span>Referral</span>
             </button>
             <button onclick="window.UIController.navigateTo('view-earn')" id="nav-btn-earn" class="nav-item flex flex-col items-center space-y-1 text-sky-400 font-bold text-[10px]">
                 <span class="text-base">💰</span>
@@ -371,7 +398,6 @@
 
         let tapCountAdmin = 0;
 
-        // DYNAMIC SNOWSTORM PARTICLES GENERATOR
         function createSnowflakes() {
             const container = document.getElementById('snow-container');
             if (!container) return;
@@ -472,6 +498,7 @@
 
         const AppState = {
             watchAdsConfig: { daily_limit: 15, reward: 10 },
+            referralConfig: { joining_bonus: 100, free_keys_per_ref: 1, enabled: true },
             user: {
                 id: "test_user_androidide",
                 name: "Gamer",
@@ -481,7 +508,10 @@
                 completedTasks: {},
                 watchedAds: 0,
                 lastAdResetDate: "",
-                keyRequests: { sent: 0, approved: 0, rejected: 0 }
+                keyRequests: { sent: 0, approved: 0, rejected: 0 },
+                total_referrals: 0,
+                referral_earnings: 0,
+                free_key_credits: 0
             },
             loaders: {}
         };
@@ -522,6 +552,7 @@
 
                 if (screenId === 'view-keys') FirebaseService.fetchLoadersAndHistory();
                 if (screenId === 'view-earn') FirebaseService.fetchTasks();
+                if (screenId === 'view-refer') initReferralSystem();
             },
 
             updateHeader() {
@@ -542,6 +573,97 @@
                     const currentLimit = Number(AppState.watchAdsConfig.daily_limit);
                     adBtn.innerText = `Watch Video (+${currentReward} Coins) [${watched}/${currentLimit} Today]`;
                 }
+
+                // Update Free Key Credit UI elements in VIP Store
+                const freeKeyBanner = document.getElementById('free-key-banner');
+                const lblFreeCredits = document.getElementById('lbl-free-credits');
+                if (freeKeyBanner && lblFreeCredits) {
+                    const credits = Number(AppState.user.free_key_credits || 0);
+                    lblFreeCredits.innerText = credits;
+                    if (credits > 0) {
+                        freeKeyBanner.classList.remove('hidden');
+                    } else {
+                        freeKeyBanner.classList.add('hidden');
+                        const chk = document.getElementById('use-free-key-check');
+                        if (chk) chk.checked = false;
+                    }
+                }
+            }
+        };
+
+        function initReferralSystem() {
+            const botUsername = "SummerGalaxyBot"; // Apne bot ka username yahan daalein
+            const myId = AppState.user.id;
+            const refLink = `https://t.me/${botUsername}?start=ref_${myId}`;
+            
+            const refInput = document.getElementById('ref-link-input');
+            if (refInput) refInput.value = refLink;
+
+            // Update referral subtitle dynamically from server config
+            const bonusSpan = document.getElementById('txt-dynamic-bonus');
+            if (bonusSpan) bonusSpan.innerText = `+${AppState.referralConfig.joining_bonus} Coins`;
+
+            // Handle Telegram start_param referral bonus dynamically
+            if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+                const startParam = tg.initDataUnsafe.start_param;
+                if (startParam.startsWith('ref_')) {
+                    const referrerId = startParam.replace('ref_', '');
+                    if (referrerId && referrerId !== myId) {
+                        const referredRef = ref(db, `users/${myId}/referred_by`);
+                        get(referredRef).then(async (snap) => {
+                            if (!snap.exists()) {
+                                await set(referredRef, referrerId);
+
+                                const joiningBonus = Number(AppState.referralConfig.joining_bonus || 100);
+                                
+                                // Give joining bonus to new user
+                                AppState.user.coins += joiningBonus;
+
+                                // Give reward & free key credit to referrer dynamically from config
+                                const referrerRef = ref(db, `users/${referrerId}`);
+                                const refSnap = await get(referrerRef);
+                                if (refSnap.exists()) {
+                                    const refData = refSnap.val();
+                                    const newCoins = (refData.coins || 0) + joiningBonus;
+                                    const totalRefs = (refData.total_referrals || 0) + 1;
+                                    const refEarnings = (refData.referral_earnings || 0) + joiningBonus;
+                                    const freeKeys = (refData.free_key_credits || 0) + Number(AppState.referralConfig.free_keys_per_ref || 1);
+                                    
+                                    await update(referrerRef, {
+                                        coins: newCoins,
+                                        total_referrals: totalRefs,
+                                        referral_earnings: refEarnings,
+                                        free_key_credits: freeKeys
+                                    });
+                                }
+                                window.showToast(`🎁 Referral active! +${joiningBonus} Coins bonus credited!`, "🎁");
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Bind current user referral stats
+            onValue(ref(db, `users/${myId}`), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const countEl = document.getElementById('ui-ref-count');
+                    const coinsEl = document.getElementById('ui-ref-coins');
+                    const keysEl = document.getElementById('ui-free-keys');
+                    if (countEl) countEl.innerText = data.total_referrals || 0;
+                    if (coinsEl) coinsEl.innerText = `${data.referral_earnings || 0} 🪙`;
+                    if (keysEl) keysEl.innerText = `${data.free_key_credits || 0} 🔑`;
+                }
+            });
+        }
+
+        window.copyReferralLink = function() {
+            const refInput = document.getElementById('ref-link-input');
+            if (refInput) {
+                refInput.select();
+                refInput.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(refInput.value);
+                window.showToast("Invite link copied to clipboard! 📋", "✅");
             }
         };
 
@@ -550,26 +672,47 @@
 
             async fetchConfigs() {
                 try {
-                    // 1. Direct fetch immediately on startup
+                    // Fetch Watch Ads Config
                     const snap = await get(ref(db, 'watch_ads_config'));
                     if (snap.exists()) {
                         const adData = snap.val();
                         if (adData.reward !== undefined) AppState.watchAdsConfig.reward = Number(adData.reward);
                         if (adData.daily_limit !== undefined) AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit);
-                        window.UIController.updateHeader();
                     }
 
-                    // 2. Realtime listener for live updates
+                    // Fetch Referral Config Dynamically from Server
+                    const refConfSnap = await get(ref(db, 'referral_config'));
+                    if (refConfSnap.exists()) {
+                        const rData = refConfSnap.val();
+                        AppState.referralConfig = {
+                            joining_bonus: Number(rData.joining_bonus || 100),
+                            free_keys_per_ref: Number(rData.free_keys_per_ref || 1),
+                            enabled: rData.enabled !== false
+                        };
+                    }
+
+                    window.UIController.updateHeader();
+
+                    // Realtime listeners for server updates
                     onValue(ref(db, 'watch_ads_config'), (snapshot) => {
                         if (snapshot.exists()) {
                             const adData = snapshot.val();
-                            if (adData.reward !== undefined) {
-                                AppState.watchAdsConfig.reward = Number(adData.reward);
-                            }
-                            if (adData.daily_limit !== undefined) {
-                                AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit);
-                            }
+                            if (adData.reward !== undefined) AppState.watchAdsConfig.reward = Number(adData.reward);
+                            if (adData.daily_limit !== undefined) AppState.watchAdsConfig.daily_limit = Number(adData.daily_limit);
                             window.UIController.updateHeader();
+                        }
+                    });
+
+                    onValue(ref(db, 'referral_config'), (snapshot) => {
+                        if (snapshot.exists()) {
+                            const rData = snapshot.val();
+                            AppState.referralConfig = {
+                                joining_bonus: Number(rData.joining_bonus || 100),
+                                free_keys_per_ref: Number(rData.free_keys_per_ref || 1),
+                                enabled: rData.enabled !== false
+                            };
+                            const bonusSpan = document.getElementById('txt-dynamic-bonus');
+                            if (bonusSpan) bonusSpan.innerText = `+${AppState.referralConfig.joining_bonus} Coins`;
                         }
                     });
                 } catch (e) { console.log("Config fallback active:", e); }
@@ -590,6 +733,9 @@
                         AppState.user.completedTasks = data.completed_tasks || {};
                         AppState.user.lastAdResetDate = data.last_ad_reset_date || "";
                         AppState.user.keyRequests = data.keyRequests || { sent: 0, approved: 0, rejected: 0 };
+                        AppState.user.total_referrals = data.total_referrals || 0;
+                        AppState.user.referral_earnings = data.referral_earnings || 0;
+                        AppState.user.free_key_credits = data.free_key_credits || 0;
 
                         if (AppState.user.lastAdResetDate !== "" && AppState.user.lastAdResetDate !== today) {
                             AppState.user.watchedAds = 0;
@@ -615,6 +761,7 @@
                 this.listenMaintenanceMode();
                 this.listenBanStatus();
                 this.fetchLeaderboard();
+                initReferralSystem();
                 
                 window.UIController.navigateTo('view-earn');
             },
@@ -708,6 +855,9 @@
                         watched_ads: AppState.user.watchedAds,
                         last_ad_reset_date: AppState.user.lastAdResetDate,
                         keyRequests: AppState.user.keyRequests,
+                        total_referrals: AppState.user.total_referrals,
+                        referral_earnings: AppState.user.referral_earnings,
+                        free_key_credits: AppState.user.free_key_credits,
                         last_earned: serverTimestamp()
                     });
                 } catch(e){}
@@ -813,7 +963,7 @@
                     item.className = "bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs";
                     item.innerHTML = `
                         <div>
-                            <div class="font-bold text-slate-200">${cleanLoaderName} (${req.duration})</div>
+                            <div class="font-bold text-slate-200">${cleanLoaderName} (${req.duration}) ${req.is_free ? '<span class="text-emerald-400 font-mono text-[9px]">(FREE)</span>' : ''}</div>
                             <div class="text-[10px] text-slate-500 font-mono">${req.assigned_key || req.note || 'Pending Verification...'}</div>
                         </div>
                         <span class="text-[10px] font-bold ${isApproved ? 'text-emerald-400' : 'text-amber-400'} uppercase">${req.status || 'PENDING'}</span>
@@ -973,15 +1123,27 @@
                     return;
                 }
 
-                const loaderObj = AppState.loaders[loader];
-                const cost = loaderObj ? (Number(loaderObj.coin_cost) || Number(loaderObj.cost) || 0) : 0;
+                const useFreeKey = document.getElementById('use-free-key-check')?.checked;
+                let isUsingFreeKey = false;
 
-                if (AppState.user.coins < cost) {
-                    window.showToast(`Insufficient balance! Required: ${cost} Coins.`, "❌");
-                    return;
+                if (useFreeKey) {
+                    if ((AppState.user.free_key_credits || 0) > 0) {
+                        AppState.user.free_key_credits -= 1;
+                        isUsingFreeKey = true;
+                    } else {
+                        window.showToast("You don't have any free key credits left!", "❌");
+                        return;
+                    }
+                } else {
+                    const loaderObj = AppState.loaders[loader];
+                    const cost = loaderObj ? (Number(loaderObj.coin_cost) || Number(loaderObj.cost) || 0) : 0;
+
+                    if (AppState.user.coins < cost) {
+                        window.showToast(`Insufficient balance! Required: ${cost} Coins. (Or use Free Key)`, "❌");
+                        return;
+                    }
+                    AppState.user.coins -= cost;
                 }
-
-                AppState.user.coins -= cost;
                 
                 if (!AppState.user.keyRequests) AppState.user.keyRequests = { sent: 0, approved: 0, rejected: 0 };
                 AppState.user.keyRequests.sent = (AppState.user.keyRequests.sent || 0) + 1;
@@ -995,9 +1157,10 @@
                     duration: duration,
                     status: "pending",
                     hwid: AppState.user.id,
-                    telegram_username: "@" + AppState.user.name
+                    telegram_username: "@" + AppState.user.name,
+                    is_free: isUsingFreeKey
                 }).then(() => {
-                    window.showToast("Redemption request submitted successfully! 🎉", "🎉");
+                    window.showToast(isUsingFreeKey ? "Free Pass request submitted! 🔑" : "Redemption request submitted! 🎉", "🎉");
                     FirebaseService.fetchHistory();
                 }).catch((err) => {
                     console.error(err);
